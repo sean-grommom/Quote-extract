@@ -316,45 +316,74 @@ td input.cell-input {
 //  CONSTANTS
 // ══════════════════════════════════════════════════════════════
 const APPS_SCRIPT_TEMPLATE = `function doPost(e) {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-  var data = JSON.parse(e.postData.contents);
-  var rows = data.rows || [];
+  try {
+    var SHEET_NAME = "Procurement";
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var sheet = ss.getSheetByName(SHEET_NAME);
 
-  if (sheet.getLastRow() === 0) {
-    var headers = [
-      "Quote Date", "Supplier", "Specification", "Paper tube (mm)",
-      "Packaging Type", "Net Weight (kg)", "Gross Weight (kg)",
-      "MOQ", "Lead Time", "Quote Validity",
-      "INCOTERM", "Price / roll", "Price / kg", "Source file", "Timestamp"
-    ];
-    sheet.appendRow(headers);
-    sheet.getRange(1, 1, 1, headers.length).setFontWeight("bold");
+    if (!sheet) {
+      sheet = ss.insertSheet(SHEET_NAME);
+    }
+
+    if (!e || !e.postData || !e.postData.contents) {
+      throw new Error("No POST body received.");
+    }
+
+    var data = JSON.parse(e.postData.contents);
+    var rows = Array.isArray(data.rows) ? data.rows : [];
+
+    if (sheet.getLastRow() === 0) {
+      var headers = [
+        "Quote Date", "Supplier", "Specification", "Paper tube (mm)",
+        "Packaging Type", "Net Weight (kg)", "Gross Weight (kg)",
+        "MOQ", "Lead Time", "Quote Validity",
+        "INCOTERM", "Price / roll", "Price / kg", "Source file", "Timestamp"
+      ];
+      sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+      sheet.getRange(1, 1, 1, headers.length).setFontWeight("bold");
+    }
+
+    if (rows.length > 0) {
+      var values = rows.map(function(r) {
+        return [
+          r.quote_date || "",
+          r.supplier || "",
+          r.specification || "",
+          r.paper_tube_mm || "",
+          r.packaging_type || "",
+          r.net_weight_kg || "",
+          r.gross_weight_kg || "",
+          r.moq || "",
+          r.lead_time || "",
+          r.quote_validity || "",
+          r.incoterm || "",
+          r.price_per_roll || "",
+          r.price_per_kg || "",
+          r._source_file || "",
+          r._timestamp || ""
+        ];
+      });
+
+      sheet
+        .getRange(sheet.getLastRow() + 1, 1, values.length, values[0].length)
+        .setValues(values);
+    }
+
+    return ContentService
+      .createTextOutput(JSON.stringify({
+        status: "ok",
+        rows_added: rows.length
+      }))
+      .setMimeType(ContentService.MimeType.JSON);
+
+  } catch (err) {
+    return ContentService
+      .createTextOutput(JSON.stringify({
+        status: "error",
+        message: String(err)
+      }))
+      .setMimeType(ContentService.MimeType.JSON);
   }
-
-  for (var i = 0; i < rows.length; i++) {
-    var r = rows[i];
-    sheet.appendRow([
-      r.quote_date      || "",
-      r.supplier        || "",
-      r.specification   || "",
-      r.paper_tube_mm   || "",
-      r.packaging_type  || "",
-      r.net_weight_kg   || "",
-      r.gross_weight_kg || "",
-      r.moq             || "",
-      r.lead_time       || "",
-      r.quote_validity  || "",
-      r.incoterm        || "",
-      r.price_per_roll  || "",
-      r.price_per_kg    || "",
-      r._source_file    || "",
-      r._timestamp      || ""
-    ]);
-  }
-
-  return ContentService
-    .createTextOutput(JSON.stringify({ status: "ok", rows_added: rows.length }))
-    .setMimeType(ContentService.MimeType.JSON);
 }`;
 
 const EXTRACTION_PROMPT = `You are a procurement data extraction specialist for cling wrap and packaging film products. Analyze this document (purchase order, quotation, invoice, or procurement screenshot) and extract ALL line items.
@@ -795,42 +824,80 @@ function buildIncotermGrid() {
 // ══════════════════════════════════════════════════════════════
 async function sendToSheets() {
   const url = $("#webhookInput").value.trim();
-  if (!url) { $("#setupPanel").classList.remove("hidden"); $("#setupToggle").textContent = "✕ Close"; return; }
+  if (!url) {
+    $("#setupPanel").classList.remove("hidden");
+    $("#setupToggle").textContent = "✕ Close";
+    return;
+  }
+
+  if (results.length === 0) {
+    showSheetStatus(false, "No extracted rows to send.");
+    return;
+  }
+
+  if (editingCell) {
+    const active = document.activeElement;
+    if (active && active.classList && active.classList.contains("cell-input")) {
+      active.blur();
+    }
+  }
 
   const btn = $("#sheetsBtn");
   btn.textContent = "Sending…";
-  btn.disabled    = true;
+  btn.disabled = true;
+  $("#sheetStatus").classList.add("hidden");
 
   const fixedRows = results.map(row => ({
-    quote_date:      row.quote_date      || "",
-    supplier:        row.supplier        || "",
-    specification:   row.specification   || "",
-    paper_tube_mm:   row.paper_tube_mm   || "",
-    packaging_type:  row.packaging_type  || "",
-    net_weight_kg:   row.net_weight_kg   || "",
+    quote_date:      row.quote_date || "",
+    supplier:        row.supplier || "",
+    specification:   row.specification || "",
+    paper_tube_mm:   row.paper_tube_mm || "",
+    packaging_type:  row.packaging_type || "",
+    net_weight_kg:   row.net_weight_kg || "",
     gross_weight_kg: row.gross_weight_kg || "",
-    moq:             row.moq             || "",
-    lead_time:       row.lead_time       || "",
-    quote_validity:  row.quote_validity  || "",
-    incoterm:        row.incoterm        || "N.A",
-    price_per_roll:  row.price_per_roll  || "",
+    moq:             row.moq || "",
+    lead_time:       row.lead_time || "",
+    quote_validity:  row.quote_validity || "",
+    incoterm:        row.incoterm || "N.A",
+    price_per_roll:  row.price_per_roll || "",
     price_per_kg:    computePricePerKg(row),
-    _source_file:    row._source_file    || "",
-    _timestamp:      row._timestamp      || new Date().toISOString(),
+    _source_file:    row._source_file || "",
+    _timestamp:      row._timestamp || new Date().toISOString(),
   }));
 
   try {
-    await fetch(url, {
-      method: "POST", mode: "no-cors",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ rows: fixedRows }),
+    const resp = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "text/plain;charset=utf-8"
+      },
+      body: JSON.stringify({ rows: fixedRows })
     });
-    showSheetStatus(true, results.length);
+
+    const rawText = await resp.text();
+
+    if (!resp.ok) {
+      throw new Error("HTTP " + resp.status + " — " + rawText);
+    }
+
+    let data;
+    try {
+      data = JSON.parse(rawText);
+    } catch {
+      throw new Error("Server returned non-JSON response: " + rawText);
+    }
+
+    if (data.status !== "ok") {
+      throw new Error(data.message || "Apps Script returned an error.");
+    }
+
+    showSheetStatus(true, data.rows_added ?? fixedRows.length);
   } catch (err) {
-    showSheetStatus(false, err.message);
+    showSheetStatus(false, err.message || "Failed to send to Google Sheets.");
+  } finally {
+    btn.textContent = "Send to Google Sheets →";
+    btn.disabled = false;
   }
-  btn.textContent = "Send to Google Sheets →";
-  btn.disabled    = false;
 }
 
 function showSheetStatus(ok, val) {
