@@ -179,6 +179,24 @@ td input.cell-input {
   <button class="btn btn-ghost" id="setupToggle">⚙ Sheets Setup</button>
 </div>
 
+<!-- ═══ COMPANY ACCESS ═══ -->
+<div class="panel" id="authPanel">
+  <p class="panel-title">Company Access</p>
+  <p style="font-size:13px;color:#ccc;margin-bottom:10px;">Enter the Apps Script Web App URL and site password to unlock the extractor. Password verification happens in Apps Script, not in this HTML file.</p>
+  <label class="field-label">Apps Script Web App URL</label>
+  <input type="text" class="input" id="authWebhookInput" placeholder="https://script.google.com/macros/s/...">
+  <p class="hint">Use the same URL as the Google Sheets webhook below. Stored locally in your browser only.</p>
+  <div style="height:12px"></div>
+  <label class="field-label">Site password</label>
+  <input type="password" class="input" id="sitePasswordInput" placeholder="Enter company password">
+  <p class="hint" id="authHint">Locked until verified.</p>
+  <div style="display:flex;gap:8px;align-items:center;margin-top:16px;flex-wrap:wrap;">
+    <button class="btn btn-primary" id="authBtn">Unlock Site</button>
+    <button class="btn btn-ghost" id="authResetBtn">Lock / Reset</button>
+    <span id="authUser" style="font-size:12px;color:#8FD694;"></span>
+  </div>
+</div>
+
 <!-- ═══ API KEY ═══ -->
 <div class="panel" id="apiPanel">
   <p class="panel-title">Anthropic API Key</p>
@@ -213,10 +231,10 @@ td input.cell-input {
     </div>
     <pre class="code-body" id="scriptCode"></pre>
   </div>
-  <div class="step"><span class="step-n">4</span><span>Deploy: <b>Deploy → New deployment → Web app</b>. Execute as = <b>Me</b>, Access = <b>Anyone</b>. Deploy &amp; authorize.</span></div>
+  <div class="step"><span class="step-n">4</span><span>Deploy: <b>Deploy → New deployment → Web app</b>. Execute as = <b>User accessing the web app</b>, Access = <b>Anyone in your Google Workspace domain</b>. Deploy &amp; authorize.</span></div>
   <div class="step"><span class="step-n">5</span><span>Paste the Web App URL below:</span></div>
   <input type="text" class="input" id="webhookInput" placeholder="https://script.google.com/macros/s/...">
-  <p class="hint">Stored locally in your browser only.</p>
+  <p class="hint">Stored locally in your browser only. Use the same URL above for company access.</p>
 </div>
 
 <!-- ═══ DROPZONE ═══ -->
@@ -315,74 +333,156 @@ td input.cell-input {
 // ══════════════════════════════════════════════════════════════
 //  CONSTANTS
 // ══════════════════════════════════════════════════════════════
-const APPS_SCRIPT_TEMPLATE = `function doPost(e) {
+const APPS_SCRIPT_TEMPLATE = `const SHEET_NAME = "Procurement";
+const SITE_PASSWORD = "Vikang12345";
+const COMPANY_DOMAIN = "yourcompany.com"; // <-- replace with your real Google Workspace domain
+const MAX_ROWS_PER_REQUEST = 20;
+const MAX_LEN = 250;
+const ALLOWED_PACKAGING_TYPES = [
+  "Roll", "Retail Box", "Industrial Roll", "Jumbo Roll", "Sheet", "Carton", "Pallet", "Bag", "Bundle"
+];
+
+function jsonOut(obj) {
+  return ContentService
+    .createTextOutput(JSON.stringify(obj))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function normalizeString(v) {
+  var s = String(v == null ? "" : v).trim();
+  if (/^[=+\-@]/.test(s)) s = "'" + s;
+  if (s.length > MAX_LEN) s = s.slice(0, MAX_LEN);
+  return s;
+}
+
+function mustBeNumber(v, fieldName) {
+  var s = normalizeString(v);
+  if (!s) return "";
+  if (!/^\d+(\.\d+)?$/.test(s)) {
+    throw new Error(fieldName + " must be numeric.");
+  }
+  return s;
+}
+
+function validatePackagingType(v) {
+  var s = normalizeString(v);
+  if (!s) return "";
+  var matched = ALLOWED_PACKAGING_TYPES.filter(function(opt) {
+    return opt.toLowerCase() === s.toLowerCase();
+  })[0];
+  if (!matched) {
+    throw new Error("Packaging Type must be one of: " + ALLOWED_PACKAGING_TYPES.join(", "));
+  }
+  return matched;
+}
+
+function validateIncoterm(v) {
+  var s = normalizeString(v || "N.A");
+  if (!s) s = "N.A";
+  if (!/^(N\.A|FOB(?:\s+.+)?|CIF(?:\s+.+)?)$/i.test(s)) {
+    throw new Error("INCOTERM must be N.A, FOB, or CIF.");
+  }
+  if (/^n\.a$/i.test(s)) return "N.A";
+  if (/^fob/i.test(s)) return "FOB" + s.slice(3);
+  if (/^cif/i.test(s)) return "CIF" + s.slice(3);
+  return s;
+}
+
+function sanitizeRow(r) {
+  return [
+    normalizeString(r.quote_date),
+    normalizeString(r.supplier),
+    normalizeString(r.specification),
+    mustBeNumber(r.paper_tube_mm, "Paper tube (mm)"),
+    validatePackagingType(r.packaging_type),
+    mustBeNumber(r.net_weight_kg, "Net Weight (kg)"),
+    mustBeNumber(r.gross_weight_kg, "Gross Weight (kg)"),
+    normalizeString(r.moq),
+    normalizeString(r.lead_time),
+    normalizeString(r.quote_validity),
+    validateIncoterm(r.incoterm),
+    normalizeString(r.price_per_roll),
+    normalizeString(r.price_per_kg),
+    normalizeString(r._source_file),
+    normalizeString(r._timestamp)
+  ];
+}
+
+function getAuthorizedEmail_() {
+  var email = (Session.getActiveUser().getEmail() || "").trim().toLowerCase();
+  if (!email) {
+    throw new Error("Could not detect signed-in Google account. Redeploy the web app with Execute as 'User accessing the web app' and Access limited to your Google Workspace domain.");
+  }
+  if (!email.endsWith("@" + COMPANY_DOMAIN.toLowerCase())) {
+    throw new Error("Unauthorized Google account: " + email);
+  }
+  return email;
+}
+
+function ensureSheet_(ss) {
+  var sheet = ss.getSheetByName(SHEET_NAME);
+  if (!sheet) {
+    sheet = ss.insertSheet(SHEET_NAME);
+  }
+  if (sheet.getLastRow() === 0) {
+    var headers = [
+      "Quote Date", "Supplier", "Specification", "Paper tube (mm)",
+      "Packaging Type", "Net Weight (kg)", "Gross Weight (kg)",
+      "MOQ", "Lead Time", "Quote Validity",
+      "INCOTERM", "Price / roll", "Price / kg", "Source file", "Timestamp", "Submitted By"
+    ];
+    sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+    sheet.getRange(1, 1, 1, headers.length).setFontWeight("bold");
+  }
+  return sheet;
+}
+
+function doPost(e) {
   try {
-    var SHEET_NAME = "Procurement";
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var sheet = ss.getSheetByName(SHEET_NAME);
-
-    if (!sheet) {
-      sheet = ss.insertSheet(SHEET_NAME);
-    }
-
     if (!e || !e.postData || !e.postData.contents) {
       throw new Error("No POST body received.");
     }
 
-    var data = JSON.parse(e.postData.contents);
+    var data = JSON.parse(e.postData.contents || "{}");
+    var email = getAuthorizedEmail_();
+
+    if (normalizeString(data.password) !== SITE_PASSWORD) {
+      throw new Error("Incorrect site password.");
+    }
+
+    if (data.action === "auth") {
+      return jsonOut({ status: "ok", authenticated: true, user_email: email });
+    }
+
+    if (data.action !== "submit") {
+      throw new Error("Unknown action.");
+    }
+
     var rows = Array.isArray(data.rows) ? data.rows : [];
-
-    if (sheet.getLastRow() === 0) {
-      var headers = [
-        "Quote Date", "Supplier", "Specification", "Paper tube (mm)",
-        "Packaging Type", "Net Weight (kg)", "Gross Weight (kg)",
-        "MOQ", "Lead Time", "Quote Validity",
-        "INCOTERM", "Price / roll", "Price / kg", "Source file", "Timestamp"
-      ];
-      sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
-      sheet.getRange(1, 1, 1, headers.length).setFontWeight("bold");
+    if (rows.length === 0) {
+      throw new Error("No rows received.");
+    }
+    if (rows.length > MAX_ROWS_PER_REQUEST) {
+      throw new Error("Max 20 rows per request.");
     }
 
-    if (rows.length > 0) {
-      var values = rows.map(function(r) {
-        return [
-          r.quote_date || "",
-          r.supplier || "",
-          r.specification || "",
-          r.paper_tube_mm || "",
-          r.packaging_type || "",
-          r.net_weight_kg || "",
-          r.gross_weight_kg || "",
-          r.moq || "",
-          r.lead_time || "",
-          r.quote_validity || "",
-          r.incoterm || "",
-          r.price_per_roll || "",
-          r.price_per_kg || "",
-          r._source_file || "",
-          r._timestamp || ""
-        ];
-      });
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var sheet = ensureSheet_(ss);
+    var values = rows.map(function(r) {
+      var sanitized = sanitizeRow(r);
+      sanitized.push(email);
+      return sanitized;
+    });
 
-      sheet
-        .getRange(sheet.getLastRow() + 1, 1, values.length, values[0].length)
-        .setValues(values);
-    }
+    sheet.getRange(sheet.getLastRow() + 1, 1, values.length, values[0].length).setValues(values);
 
-    return ContentService
-      .createTextOutput(JSON.stringify({
-        status: "ok",
-        rows_added: rows.length
-      }))
-      .setMimeType(ContentService.MimeType.JSON);
-
+    return jsonOut({
+      status: "ok",
+      rows_added: values.length,
+      user_email: email
+    });
   } catch (err) {
-    return ContentService
-      .createTextOutput(JSON.stringify({
-        status: "error",
-        message: String(err)
-      }))
-      .setMimeType(ContentService.MimeType.JSON);
+    return jsonOut({ status: "error", message: String(err) });
   }
 }`;
 
@@ -461,6 +561,8 @@ let files        = [];
 let results      = [];
 let processing   = false;
 let selectedModel = "claude-haiku-4-5-20251001";
+let siteAuthenticated = false;
+let authenticatedUserEmail = "";
 // Session-level fallback overrides (applied to rows that have no per-row value)
 let detectedIncoterm   = null;
 let incotermDetail     = "";
@@ -489,6 +591,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const savedWebhook = localStorage.getItem("pe_webhook")  || "";
   $("#apiKeyInput").value  = savedKey;
   $("#webhookInput").value = savedWebhook;
+  $("#authWebhookInput").value = savedWebhook;
   if (savedKey) $("#apiKeyHint").textContent = "✓ Key saved from previous session.";
 
   const savedModel = localStorage.getItem("pe_model") || "claude-haiku-4-5-20251001";
@@ -508,6 +611,11 @@ document.addEventListener("DOMContentLoaded", () => {
   });
   $("#webhookInput").addEventListener("input", (e) => {
     localStorage.setItem("pe_webhook", e.target.value);
+    $("#authWebhookInput").value = e.target.value;
+  });
+  $("#authWebhookInput").addEventListener("input", (e) => {
+    localStorage.setItem("pe_webhook", e.target.value);
+    $("#webhookInput").value = e.target.value;
   });
 
   $("#scriptCode").textContent = APPS_SCRIPT_TEMPLATE;
@@ -522,6 +630,12 @@ document.addEventListener("DOMContentLoaded", () => {
     navigator.clipboard.writeText(APPS_SCRIPT_TEMPLATE);
     $("#copyScript").textContent = "Copied!";
     setTimeout(() => { $("#copyScript").textContent = "Copy"; }, 1500);
+  });
+
+  $("#authBtn").addEventListener("click", authenticateSite);
+  $("#authResetBtn").addEventListener("click", resetAuth);
+  $("#sitePasswordInput").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") authenticateSite();
   });
 
   // Dropzone
@@ -575,10 +689,78 @@ document.addEventListener("DOMContentLoaded", () => {
   render();
 });
 
+function requireAuth() {
+  if (siteAuthenticated) return true;
+  showError("Please unlock the site first using the Company Access panel.");
+  return false;
+}
+
+async function authenticateSite() {
+  const url = $("#authWebhookInput").value.trim();
+  const password = $("#sitePasswordInput").value;
+
+  if (!url) {
+    showError("Please paste your Apps Script Web App URL first.");
+    $("#setupPanel").classList.remove("hidden");
+    $("#setupToggle").textContent = "✕ Close";
+    return;
+  }
+  if (!password) {
+    showError("Please enter the site password.");
+    return;
+  }
+
+  const btn = $("#authBtn");
+  btn.disabled = true;
+  btn.textContent = "Verifying…";
+  hideError();
+
+  try {
+    const resp = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({ action: "auth", password })
+    });
+    const rawText = await resp.text();
+    if (!resp.ok) throw new Error("HTTP " + resp.status + " — " + rawText);
+    let data;
+    try { data = JSON.parse(rawText); } catch {
+      throw new Error("Server returned non-JSON response: " + rawText);
+    }
+    if (data.status !== "ok") throw new Error(data.message || "Authentication failed.");
+
+    siteAuthenticated = true;
+    authenticatedUserEmail = data.user_email || "";
+    $("#authHint").textContent = "✓ Site unlocked.";
+    $("#authUser").textContent = authenticatedUserEmail ? "Signed in as " + authenticatedUserEmail : "Verified";
+    $("#webhookInput").value = url;
+    localStorage.setItem("pe_webhook", url);
+    showSheetStatus(true, "Site unlocked");
+  } catch (err) {
+    siteAuthenticated = false;
+    authenticatedUserEmail = "";
+    $("#authHint").textContent = "Locked until verified.";
+    $("#authUser").textContent = "";
+    showError(err.message || "Authentication failed.");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Unlock Site";
+  }
+}
+
+function resetAuth() {
+  siteAuthenticated = false;
+  authenticatedUserEmail = "";
+  $("#sitePasswordInput").value = "";
+  $("#authHint").textContent = "Locked until verified.";
+  $("#authUser").textContent = "";
+}
+
 // ══════════════════════════════════════════════════════════════
 //  FILE HANDLING
 // ══════════════════════════════════════════════════════════════
 function addFiles(fileList) {
+  if (!requireAuth()) return;
   const valid = Array.from(fileList).filter(f => f.type === "application/pdf" || f.type.startsWith("image/"));
   if (valid.length === 0) { showError("Please upload images (PNG, JPG) or PDFs only."); return; }
 
@@ -651,6 +833,7 @@ async function extractFromFile(file) {
 //  PROCESS ALL — parallel with concurrency limit of 3
 // ══════════════════════════════════════════════════════════════
 async function processAll() {
+  if (!requireAuth()) return;
   if (processing || files.length === 0) return;
   processing = true;
   fileStatus = new Map(files.map(f => [f.name, { state: "pending" }]));
@@ -823,15 +1006,27 @@ function buildIncotermGrid() {
 //  SEND TO SHEETS
 // ══════════════════════════════════════════════════════════════
 async function sendToSheets() {
+  if (!requireAuth()) return;
+
   const url = $("#webhookInput").value.trim();
+  const password = $("#sitePasswordInput").value;
   if (!url) {
     $("#setupPanel").classList.remove("hidden");
     $("#setupToggle").textContent = "✕ Close";
     return;
   }
+  if (!password) {
+    showSheetStatus(false, "Please enter the site password again.");
+    return;
+  }
 
   if (results.length === 0) {
     showSheetStatus(false, "No extracted rows to send.");
+    return;
+  }
+
+  if (results.length > 20) {
+    showSheetStatus(false, "Too many rows selected. Send a maximum of 20 rows per request.");
     return;
   }
 
@@ -871,7 +1066,7 @@ async function sendToSheets() {
       headers: {
         "Content-Type": "text/plain;charset=utf-8"
       },
-      body: JSON.stringify({ rows: fixedRows })
+      body: JSON.stringify({ action: "submit", password, rows: fixedRows })
     });
 
     const rawText = await resp.text();
@@ -891,7 +1086,12 @@ async function sendToSheets() {
       throw new Error(data.message || "Apps Script returned an error.");
     }
 
-    showSheetStatus(true, data.rows_added ?? fixedRows.length);
+    if (data.user_email) {
+      authenticatedUserEmail = data.user_email;
+      $("#authUser").textContent = "Signed in as " + data.user_email;
+    }
+
+    showSheetStatus(true, (data.rows_added ?? fixedRows.length) + " rows to Google Sheets");
   } catch (err) {
     showSheetStatus(false, err.message || "Failed to send to Google Sheets.");
   } finally {
@@ -903,7 +1103,7 @@ async function sendToSheets() {
 function showSheetStatus(ok, val) {
   const el = $("#sheetStatus");
   el.className   = ok ? "bar-ok" : "bar-err";
-  el.textContent = ok ? "✓ Sent " + val + " rows to Google Sheets" : "✕ " + val;
+  el.textContent = ok ? "✓ " + val : "✕ " + val;
   el.classList.remove("hidden");
 }
 
