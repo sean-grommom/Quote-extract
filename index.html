@@ -130,6 +130,16 @@ tr.odd { background: var(--bg); }
 
 .hidden { display: none !important; }
 .actions-row { display: flex; gap: 8px; }
+
+/* ── Model Toggle ── */
+.model-toggle { display: flex; gap: 8px; }
+.model-btn { flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; cursor: pointer; text-align: left; font-family: inherit; transition: all 0.15s; }
+.model-btn:hover { border-color: #444; }
+.model-btn.selected { border-color: var(--gold); background: #1A1700; }
+.model-btn-name { display: block; font-size: 14px; font-weight: 600; color: var(--text); }
+.model-btn-note { display: block; font-size: 11px; color: var(--text4); margin-top: 2px; }
+.model-btn.selected .model-btn-name { color: var(--gold); }
+.model-btn.selected .model-btn-note { color: #8a7a4a; }
 </style>
 </head>
 <body>
@@ -157,6 +167,19 @@ tr.odd { background: var(--bg); }
   <p style="font-size:13px;color:#ccc;margin-bottom:10px;">Your key is stored in your browser only (localStorage) and sent directly to Anthropic's API. It never touches any other server.</p>
   <input type="password" class="input" id="apiKeyInput" placeholder="sk-ant-api03-...">
   <p class="hint" id="apiKeyHint"></p>
+  <div style="margin-top:16px;">
+    <p style="font-size:12px;color:#777;margin-bottom:8px;">Extraction model</p>
+    <div class="model-toggle">
+      <button class="model-btn selected" id="modelHaiku" data-model="claude-haiku-4-5-20251001">
+        <span class="model-btn-name">Haiku 4.5</span>
+        <span class="model-btn-note">Fast &amp; cheap · $1 / $5 per MTok</span>
+      </button>
+      <button class="model-btn" id="modelSonnet" data-model="claude-sonnet-4-6">
+        <span class="model-btn-name">Sonnet 4.6</span>
+        <span class="model-btn-note">Smarter · $3 / $15 per MTok</span>
+      </button>
+    </div>
+  </div>
 </div>
 
 <!-- ═══ SETUP PANEL ═══ -->
@@ -346,6 +369,7 @@ let files = [];
 let results = [];
 let columns = [];
 let processing = false;
+let selectedModel = "claude-haiku-4-5-20251001";
 let detectedIncoterm = null;
 let incotermDetail = "";
 let incotermConfirmed = false;
@@ -371,6 +395,18 @@ document.addEventListener("DOMContentLoaded", () => {
   $("#apiKeyInput").value = savedKey;
   $("#webhookInput").value = savedWebhook;
   if (savedKey) $("#apiKeyHint").textContent = "✓ Key saved from previous session.";
+
+  // Load saved model (default: haiku)
+  const savedModel = localStorage.getItem("pe_model") || "claude-haiku-4-5-20251001";
+  selectedModel = savedModel;
+  document.querySelectorAll(".model-btn").forEach(btn => {
+    btn.classList.toggle("selected", btn.dataset.model === savedModel);
+    btn.addEventListener("click", () => {
+      selectedModel = btn.dataset.model;
+      localStorage.setItem("pe_model", selectedModel);
+      document.querySelectorAll(".model-btn").forEach(b => b.classList.toggle("selected", b === btn));
+    });
+  });
 
   // Persist on change
   $("#apiKeyInput").addEventListener("input", (e) => {
@@ -480,7 +516,7 @@ async function extractFromFile(file) {
       "anthropic-dangerous-direct-browser-access": "true"
     },
     body: JSON.stringify({
-      model: "claude-sonnet-4-20250514",
+      model: selectedModel,
       max_tokens: 4000,
       messages: [{ role: "user", content: [contentBlock, { type: "text", text: EXTRACTION_PROMPT }] }],
     }),
