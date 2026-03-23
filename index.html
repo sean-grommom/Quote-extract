@@ -101,6 +101,23 @@ td.cell-edit:hover { background:rgba(212,160,74,0.07) !important; }
 td.cell-edit:hover::after { content:" ✎"; color:#444; font-size:10px; }
 /* Computed cells */
 td.cell-computed { color:var(--gold); font-weight:500; }
+/* N.A cells */
+td.cell-na { color:#E5803A !important; }
+.warn-icon {
+  display:inline-flex; align-items:center; justify-content:center;
+  width:14px; height:14px; border-radius:50%;
+  background:#2D1A00; border:1px solid #7A4010;
+  font-size:9px; font-style:normal; color:#E5803A;
+  margin-right:5px; flex-shrink:0; cursor:default;
+  position:relative; top:-0.5px;
+}
+/* Warning summary bar */
+.bar-warn {
+  background:#1E1500; border:1px solid #5C3A00; border-radius:8px;
+  padding:10px 16px; margin-bottom:12px; font-size:13px; color:#D4A04A;
+  display:flex; align-items:center; gap:10px; animation:fadeIn 0.2s ease;
+}
+.bar-warn svg { flex-shrink:0; }
 /* Edit input inside cell */
 td input.cell-input {
   width:100%; background:#0D0D0D; border:1px solid var(--gold);
@@ -238,7 +255,8 @@ td input.cell-input {
       <button class="btn btn-green" id="sheetsBtn">Send to Google Sheets →</button>
     </div>
   </div>
-  <p style="font-size:11px;color:var(--text4);margin-bottom:10px;">Click any cell to edit its value.</p>
+  <p style="font-size:11px;color:var(--text4);margin-bottom:10px;">Click any cell to edit its value. <span style="color:#7A4010">⚠ = value not found — click to fill in.</span></p>
+  <div class="bar-warn hidden" id="warnBar"></div>
   <div class="hidden" id="sheetStatus"></div>
   <div class="table-wrap"><table><thead><tr id="tableHead"></tr></thead><tbody id="tableBody"></tbody></table></div>
 </div>
@@ -280,7 +298,7 @@ td input.cell-input {
       </svg>
     </div>
     <div class="modal-title">INCOTERMS Not Detected</div>
-    <div class="modal-desc">No trade terms were found in any uploaded file. Select one to apply as a fallback to all rows:</div>
+    <div class="modal-desc">No FOB or CIF terms were found in any uploaded file — all rows are currently set to <b style="color:#E5803A">N.A</b>. Select one below to apply it to all N.A rows:</div>
     <div class="incoterm-grid" id="incotermGrid"></div>
     <div style="margin-top:16px">
       <label class="field-label">Destination Country <span style="color:#555">(for CIF — leave blank if FOB)</span></label>
@@ -354,7 +372,7 @@ STRICT RULES:
    - "lead_time": Production or delivery lead time in English (e.g. "30 days", "4–6 weeks"). Leave blank if not stated.
    - "quote_validity": Validity period of the quote (e.g. "30 days", "valid until 2025-06-30"). Leave blank if not stated.
    - "price_per_roll": Unit price — MUST be prefixed with "USD" or "RMB" only (e.g. "USD 3.20" or "RMB 12.50"). No other currency codes. Default to RMB for Chinese documents if currency unclear.
-3. INCOTERM: Look for trade terms in the document. Only recognise "FOB" or "CIF". If CIF, append the destination country (e.g. "CIF Singapore"). If neither is found, return null.
+3. INCOTERM: Look for trade terms in the document. Only recognise "FOB" or "CIF". If CIF, append the destination country (e.g. "CIF Singapore"). If neither FOB nor CIF is found anywhere in the document, return the string "N.A" (not null, not empty — the exact string "N.A").
 4. QUOTE DATE: Find the quotation or document date (may be labelled Date / 日期 / 报价日期 / Quotation Date). Return in YYYY-MM-DD format. If not found, return null.
 
 Return ONLY valid JSON — no markdown, no backticks, no preamble. Use this exact structure:
@@ -374,8 +392,8 @@ Return ONLY valid JSON — no markdown, no backticks, no preamble. Use this exac
       "price_per_roll": "USD 3.20"
     }
   ],
-  "incoterm": "FOB or CIF [Country] or null",
-  "incoterm_detail": "e.g. FOB Shanghai or CIF Singapore or null",
+  "incoterm": "FOB, CIF [Country], or N.A",
+  "incoterm_detail": "e.g. FOB Shanghai, CIF Singapore, or N.A",
   "quote_date": "YYYY-MM-DD or null",
   "quote_date_original": "raw date text as it appears in the document, or null"
 }
@@ -622,23 +640,30 @@ async function processAll() {
       render();
       try {
         const extracted = await extractFromFile(file);
-        const ts         = new Date().toISOString();
-        const docDate    = extracted.quote_date || "";
-        const docIncoterm = extracted.incoterm_detail || extracted.incoterm || "";
+        const ts = new Date().toISOString();
 
-        // Inject document-level date & incoterm into each row
-        const items = (extracted.rows || []).map(row => ({
-          ...row,
-          quote_date:  row.quote_date  || docDate,
-          incoterm:    row.incoterm    || docIncoterm,
-          _source_file: file.name,
-          _timestamp:   ts,
-        }));
+        // Per-file date and incoterm — these stay scoped to this file's rows only
+        const docDate     = extracted.quote_date || "";
+        const rawIncoterm = extracted.incoterm_detail || extracted.incoterm || "";
+        // Normalise: only accept FOB/CIF; anything else (including null/"") → "N.A"
+        const docIncoterm = /^(FOB|CIF)/i.test(rawIncoterm) ? rawIncoterm : "N.A";
+
+        // Build rows — values come ONLY from this file, no cross-file fallback
+        const items = (extracted.rows || []).map(row => {
+          const rowIncoterm = /^(FOB|CIF)/i.test(row.incoterm || "") ? row.incoterm : docIncoterm;
+          return {
+            ...row,
+            quote_date:   row.quote_date || docDate,   // "" if this file has no date
+            incoterm:     rowIncoterm,                  // "N.A" if not found in this file
+            _source_file: file.name,
+            _timestamp:   ts,
+          };
+        });
         results.push(...items);
 
-        // Update session fallbacks (first found wins)
-        if (docDate    && !quoteDate)        { quoteDate = docDate; quoteDateOriginal = extracted.quote_date_original || docDate; }
-        if (docIncoterm && !detectedIncoterm) { detectedIncoterm = extracted.incoterm || docIncoterm; incotermDetail = docIncoterm; }
+        // Track session-level "has any file found X" — for badge display only, NOT for row override
+        if (docDate && !quoteDate)                        { quoteDate = docDate; quoteDateOriginal = extracted.quote_date_original || docDate; }
+        if (docIncoterm !== "N.A" && !detectedIncoterm)   { detectedIncoterm = docIncoterm; incotermDetail = docIncoterm; }
 
         fileStatus.set(file.name, { state: "done", count: items.length });
       } catch (err) {
@@ -720,7 +745,11 @@ function confirmDate() {
   const val = $("#manualDateInput").value;
   if (!val) return;
   quoteDate = val; quoteDateOriginal = "Manual entry"; quoteDateConfirmed = true;
-  hideModal("dateModal"); render();
+  // Apply directly to all rows that are missing a date
+  let applied = 0;
+  results.forEach(row => { if (!row.quote_date) { row.quote_date = val; applied++; } });
+  hideModal("dateModal");
+  render();
   if (pendingIncotermPrompt) { pendingIncotermPrompt = false; showModal("incotermModal"); }
 }
 
@@ -736,6 +765,8 @@ function confirmIncoterm() {
   detectedIncoterm = selectedIncoterm;
   incotermDetail   = port ? selectedIncoterm + " " + port : selectedIncoterm;
   incotermConfirmed = true;
+  // Apply directly to all rows that are "N.A"
+  results.forEach(row => { if (row.incoterm === "N.A" || !row.incoterm) { row.incoterm = incotermDetail; } });
   hideModal("incotermModal"); render();
 }
 
@@ -770,11 +801,8 @@ async function sendToSheets() {
   btn.textContent = "Sending…";
   btn.disabled    = true;
 
-  const fallbackIncoterm   = incotermConfirmed ? (incotermDetail || detectedIncoterm || "") : "";
-  const fallbackQuoteDate  = quoteDateConfirmed ? quoteDate : "";
-
   const fixedRows = results.map(row => ({
-    quote_date:      row.quote_date      || fallbackQuoteDate,
+    quote_date:      row.quote_date      || "",
     supplier:        row.supplier        || "",
     specification:   row.specification   || "",
     paper_tube_mm:   row.paper_tube_mm   || "",
@@ -784,7 +812,7 @@ async function sendToSheets() {
     moq:             row.moq             || "",
     lead_time:       row.lead_time       || "",
     quote_validity:  row.quote_validity  || "",
-    incoterm:        row.incoterm        || fallbackIncoterm,
+    incoterm:        row.incoterm        || "N.A",
     price_per_roll:  row.price_per_roll  || "",
     price_per_kg:    computePricePerKg(row),
     _source_file:    row._source_file    || "",
@@ -817,8 +845,6 @@ function showSheetStatus(ok, val) {
 // ══════════════════════════════════════════════════════════════
 function downloadCSV() {
   if (results.length === 0) return;
-  const fallbackIncoterm  = incotermConfirmed ? (incotermDetail || detectedIncoterm || "") : "";
-  const fallbackQuoteDate = quoteDateConfirmed ? quoteDate : "";
 
   const csvEscape = (v) => {
     const s = String(v ?? "");
@@ -831,11 +857,9 @@ function downloadCSV() {
   const rows = results.map(row => {
     return DISPLAY_COLS.map(c => {
       let val;
-      if      (c.key === "quote_date")    val = row.quote_date    || fallbackQuoteDate;
-      else if (c.key === "incoterm")      val = row.incoterm      || fallbackIncoterm;
-      else if (c.key === "_price_per_kg") val = computePricePerKg(row);
-      else                                val = row[c.key] || "";
-      return csvEscape(val);
+      if (c.key === "_price_per_kg") val = computePricePerKg(row);
+      else                           val = row[c.key] || "";
+      return csvEscape(val || (c.key === "incoterm" ? "N.A" : ""));
     });
   });
 
@@ -944,6 +968,32 @@ function render() {
   if (hasResults) {
     $("#resultsCount").textContent = results.length;
 
+    // ── Warning summary bar ──
+    // Count N.A / empty values in the most important fields
+    const NA_FIELDS = [
+      { key: "incoterm",      label: "INCOTERM",       isNA: v => v === "N.A" || !v },
+      { key: "quote_date",    label: "Quote Date",     isNA: v => !v },
+      { key: "price_per_roll",label: "Price / roll",   isNA: v => !v },
+      { key: "supplier",      label: "Supplier",       isNA: v => !v },
+    ];
+    const warnCounts = NA_FIELDS.map(f => {
+      const count = results.filter(r => f.isNA(r[f.key])).length;
+      return count > 0 ? `${count} row${count > 1 ? "s" : ""} missing <b>${f.label}</b>` : null;
+    }).filter(Boolean);
+
+    const warnBar = $("#warnBar");
+    if (warnCounts.length > 0) {
+      warnBar.classList.remove("hidden");
+      warnBar.innerHTML = `
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M8 1.5L14.5 13H1.5L8 1.5Z" stroke="#D4A04A" stroke-width="1.4" fill="none" stroke-linejoin="round"/>
+          <path d="M8 6V9.5M8 11V11.5" stroke="#D4A04A" stroke-width="1.4" stroke-linecap="round"/>
+        </svg>
+        <span>${warnCounts.join(" &nbsp;·&nbsp; ")} — click cells to fill in</span>`;
+    } else {
+      warnBar.classList.add("hidden");
+    }
+
     // Always rebuild the header
     const head = $("#tableHead");
     head.innerHTML = "<th>#</th>";
@@ -952,8 +1002,6 @@ function render() {
 
     // Only rebuild body if no cell is currently being edited
     if (!editingCell) {
-      const fallbackIncoterm  = incotermConfirmed ? (incotermDetail || detectedIncoterm || "") : "";
-      const fallbackQuoteDate = quoteDateConfirmed ? quoteDate : "";
       const body = $("#tableBody");
       body.innerHTML = "";
 
@@ -971,12 +1019,25 @@ function render() {
           const td = document.createElement("td");
           let val;
 
-          if      (c.key === "quote_date")    val = row.quote_date    || fallbackQuoteDate || "";
-          else if (c.key === "incoterm")      val = row.incoterm      || fallbackIncoterm  || "";
-          else if (c.key === "_price_per_kg") val = computePricePerKg(row);
-          else                                val = row[c.key] || "";
+          // Values come directly from row data — no render-time cross-file fallback
+          if (c.key === "_price_per_kg") val = computePricePerKg(row);
+          else                           val = row[c.key] || "";
 
-          td.textContent = val || "—";
+          const isNA = val === "N.A" || (!val && c.editable && (c.key === "quote_date" || c.key === "price_per_roll" || c.key === "supplier"));
+
+          if (isNA) {
+            td.classList.add("cell-na");
+            const icon = document.createElement("i");
+            icon.className   = "warn-icon";
+            icon.textContent = "!";
+            icon.title       = c.key === "incoterm"
+              ? "INCOTERM not found in source document — click to set"
+              : `${c.label} not found — click to fill in`;
+            td.appendChild(icon);
+            td.appendChild(document.createTextNode(val || "N.A"));
+          } else {
+            td.textContent = val || "—";
+          }
 
           if (c.editable) {
             td.classList.add("cell-edit");
@@ -1002,24 +1063,21 @@ function render() {
     }
   }
 
-  // ── Badge row (session overrides) ──
+  // ── Badge row (applied session overrides) ──
   const showBadge = (quoteDateConfirmed && quoteDate) || (incotermConfirmed && detectedIncoterm);
   $("#badgeRow").classList.toggle("hidden", !showBadge);
   if (showBadge) {
     let html = "";
     if (quoteDateConfirmed && quoteDate) {
-      let origLine = "";
-      if (quoteDateOriginal && quoteDateOriginal !== quoteDate && quoteDateOriginal !== "Manual entry") {
-        origLine = `<div class="badge-orig">Original: ${escHtml(quoteDateOriginal)}</div>`;
-      } else if (quoteDateOriginal === "Manual entry") {
-        origLine = `<div class="badge-orig">Manually entered — applied as fallback</div>`;
-      } else {
-        origLine = `<div class="badge-orig">Applied as fallback to rows without a date</div>`;
-      }
+      const origin = quoteDateOriginal === "Manual entry" ? "Manually entered" : `Detected: ${escHtml(quoteDateOriginal || quoteDate)}`;
       html += `<div class="badge-card">
         <div style="display:flex;align-items:center;gap:10px">
           <span style="font-size:20px">📅</span>
-          <div><div class="badge-label">Date Fallback</div><div class="badge-value">${escHtml(quoteDate)}</div>${origLine}</div>
+          <div>
+            <div class="badge-label">Date Applied</div>
+            <div class="badge-value">${escHtml(quoteDate)}</div>
+            <div class="badge-orig">${origin} — written to rows missing a date</div>
+          </div>
         </div>
         <button class="btn-change" onclick="editDate()">Edit</button>
       </div>`;
@@ -1030,7 +1088,7 @@ function render() {
           <span class="incoterm-badge">${escHtml(detectedIncoterm)}</span>
           <div>
             <div style="color:#D1D5DB;font-size:13px">${escHtml(incotermDetail)}</div>
-            <div class="badge-orig">Applied as fallback to rows without INCOTERM</div>
+            <div class="badge-orig">Applied to all rows that were N.A</div>
           </div>
         </div>
         <button class="btn-change" onclick="editIncoterm()">Change</button>
@@ -1043,15 +1101,28 @@ function render() {
   $("#emptyState").classList.toggle("hidden", hasResults || hasQueue || processing);
 }
 
-// Global edit handlers (called from inline onclick in badge cards)
 function editDate() {
   quoteDateConfirmed = false;
-  $("#manualDateInput").value = quoteDate || "";
-  $("#dateConfirm").disabled  = !quoteDate;
+  quoteDate = "";
+  $("#manualDateInput").value = "";
+  $("#dateConfirm").disabled  = true;
   showModal("dateModal");
 }
 function editIncoterm() {
+  // Revert previously applied incoterm back to N.A so user can re-apply cleanly
+  if (detectedIncoterm) {
+    results.forEach(row => {
+      if (row.incoterm === detectedIncoterm || row.incoterm === incotermDetail) row.incoterm = "N.A";
+    });
+  }
   incotermConfirmed = false;
+  detectedIncoterm  = null;
+  incotermDetail    = "";
+  selectedIncoterm  = "";
+  $$(".incoterm-opt").forEach(b => b.classList.remove("selected"));
+  const cb = $("#incotermConfirm");
+  cb.disabled    = true;
+  cb.textContent = "Confirm …";
   showModal("incotermModal");
 }
 </script>
