@@ -7,139 +7,140 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-@keyframes spin { to { transform: rotate(360deg); } }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
-::-webkit-scrollbar { height: 6px; width: 6px; }
-::-webkit-scrollbar-track { background: #161616; }
-::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+@keyframes spin  { to { transform: rotate(360deg); } }
+@keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.35; } }
+@keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+::-webkit-scrollbar { height:6px; width:6px; }
+::-webkit-scrollbar-track { background:#161616; }
+::-webkit-scrollbar-thumb { background:#333; border-radius:3px; }
 
 :root {
-  --gold: #D4A04A;
-  --bg: #111111;
-  --card: #161616;
-  --border: #222222;
-  --text: #E5E7EB;
-  --text2: #cccccc;
-  --text3: #777777;
-  --text4: #555555;
-  --green: #1B7A2E;
-  --green-bg: #132D18;
-  --green-border: #1B5C23;
-  --green-text: #8FD694;
-  --red-bg: #2D1515;
-  --red-border: #5C2020;
-  --red-text: #FCA5A5;
+  --gold:#D4A04A; --bg:#111111; --card:#161616; --border:#222222;
+  --text:#E5E7EB; --text2:#cccccc; --text3:#777777; --text4:#555555;
+  --green:#1B7A2E; --green-bg:#132D18; --green-border:#1B5C23; --green-text:#8FD694;
+  --red-bg:#2D1515; --red-border:#5C2020; --red-text:#FCA5A5;
 }
 
-body {
-  font-family: 'DM Sans', 'Noto Sans SC', -apple-system, sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  min-height: 100vh;
-  padding: 24px;
-  line-height: 1.5;
-}
+body { font-family:'DM Sans','Noto Sans SC',-apple-system,sans-serif; background:var(--bg); color:var(--text); min-height:100vh; padding:24px; line-height:1.5; }
 
 /* ── Header ── */
-.header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
-.header-left { display: flex; align-items: center; gap: 14px; }
-.header h1 { font-size: 20px; font-weight: 700; color: #F3F4F6; letter-spacing: -0.02em; }
-.header .sub { font-size: 13px; color: var(--text3); }
+.header { display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; flex-wrap:wrap; gap:12px; }
+.header-left { display:flex; align-items:center; gap:14px; }
+.header h1 { font-size:20px; font-weight:700; color:#F3F4F6; letter-spacing:-0.02em; }
+.header .sub { font-size:13px; color:var(--text3); }
 
 /* ── Buttons ── */
-.btn { font-family: inherit; font-size: 13px; border-radius: 6px; cursor: pointer; border: none; padding: 10px 20px; transition: opacity 0.15s; }
-.btn:hover { opacity: 0.88; }
-.btn:disabled { opacity: 0.5; cursor: not-allowed; }
-.btn-primary { background: var(--gold); color: #111; font-weight: 600; }
-.btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--text3); padding: 8px 16px; font-size: 13px; }
-.btn-green { background: var(--green); color: #fff; font-weight: 600; }
-.btn-skip { background: transparent; border: 1px solid var(--border); color: var(--text3); }
-.btn-copy { background: var(--gold); color: #111; border: none; padding: 4px 12px; border-radius: 4px; font-size: 11px; font-weight: 700; cursor: pointer; font-family: inherit; }
-.btn-x { background: none; border: none; color: #444; cursor: pointer; font-size: 13px; padding: 0 4px; font-family: inherit; }
-.btn-change { background: transparent; border: 1px solid var(--border); color: var(--gold); padding: 5px 12px; border-radius: 5px; font-size: 12px; cursor: pointer; font-family: inherit; }
+.btn { font-family:inherit; font-size:13px; border-radius:6px; cursor:pointer; border:none; padding:10px 20px; transition:opacity 0.15s; }
+.btn:hover { opacity:0.88; }
+.btn:disabled { opacity:0.5; cursor:not-allowed; }
+.btn-primary { background:var(--gold); color:#111; font-weight:600; }
+.btn-ghost  { background:transparent; border:1px solid var(--border); color:var(--text3); padding:8px 16px; font-size:13px; }
+.btn-green  { background:var(--green); color:#fff; font-weight:600; }
+.btn-csv    { background:transparent; border:1px solid var(--border); color:var(--text3); padding:8px 16px; font-size:13px; font-family:inherit; border-radius:6px; cursor:pointer; transition:all 0.15s; }
+.btn-csv:hover { border-color:#444; color:var(--text2); }
+.btn-skip   { background:transparent; border:1px solid var(--border); color:var(--text3); }
+.btn-copy   { background:var(--gold); color:#111; border:none; padding:4px 12px; border-radius:4px; font-size:11px; font-weight:700; cursor:pointer; font-family:inherit; }
+.btn-x      { background:none; border:none; color:#444; cursor:pointer; font-size:13px; padding:0 4px; font-family:inherit; }
+.btn-change { background:transparent; border:1px solid var(--border); color:var(--gold); padding:5px 12px; border-radius:5px; font-size:12px; cursor:pointer; font-family:inherit; }
 
 /* ── Panel ── */
-.panel { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 24px; margin-bottom: 20px; animation: fadeIn 0.2s ease; }
-.panel-title { font-size: 15px; font-weight: 600; color: var(--gold); margin-bottom: 16px; }
-.step { display: flex; align-items: flex-start; gap: 10px; font-size: 13px; color: var(--text2); margin-bottom: 10px; }
-.step-n { background: var(--gold); color: #111; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; }
-.code-wrap { background: #0D0D0D; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-bottom: 16px; }
-.code-top { display: flex; justify-content: space-between; align-items: center; padding: 8px 14px; background: var(--card); border-bottom: 1px solid var(--border); color: var(--text3); }
-.code-label { font-size: 10px; letter-spacing: 0.08em; font-weight: 600; text-transform: uppercase; }
-.code-body { margin: 0; padding: 14px; font-size: 11.5px; line-height: 1.6; color: var(--green-text); font-family: 'JetBrains Mono', monospace; overflow: auto; max-height: 200px; white-space: pre; }
+.panel { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:24px; margin-bottom:20px; animation:fadeIn 0.2s ease; }
+.panel-title { font-size:15px; font-weight:600; color:var(--gold); margin-bottom:16px; }
+.step { display:flex; align-items:flex-start; gap:10px; font-size:13px; color:var(--text2); margin-bottom:10px; }
+.step-n { background:var(--gold); color:#111; width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; flex-shrink:0; }
+.code-wrap { background:#0D0D0D; border:1px solid var(--border); border-radius:8px; overflow:hidden; margin-bottom:16px; }
+.code-top  { display:flex; justify-content:space-between; align-items:center; padding:8px 14px; background:var(--card); border-bottom:1px solid var(--border); color:var(--text3); }
+.code-label { font-size:10px; letter-spacing:0.08em; font-weight:600; text-transform:uppercase; }
+.code-body  { margin:0; padding:14px; font-size:11.5px; line-height:1.6; color:var(--green-text); font-family:'JetBrains Mono',monospace; overflow:auto; max-height:200px; white-space:pre; }
 
 /* ── Input ── */
-.input { width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 10px 14px; border-radius: 6px; font-size: 13px; font-family: inherit; outline: none; }
-.input:focus { border-color: var(--gold); }
-.hint { font-size: 11px; color: var(--text4); margin-top: 6px; }
+.input { width:100%; background:var(--bg); border:1px solid var(--border); color:var(--text); padding:10px 14px; border-radius:6px; font-size:13px; font-family:inherit; outline:none; }
+.input:focus { border-color:var(--gold); }
+.hint { font-size:11px; color:var(--text4); margin-top:6px; }
 
 /* ── Dropzone ── */
-.dropzone { border: 2px dashed #2A2A2A; border-radius: 12px; padding: 40px 24px; text-align: center; cursor: pointer; transition: all 0.2s; background: #141414; margin-bottom: 20px; }
-.dropzone.active { border-color: var(--gold); background: #1A1700; }
-.dropzone .drop-text { font-size: 15px; font-weight: 500; color: var(--text2); margin: 8px 0 4px; }
-.dropzone .drop-hint { font-size: 12px; color: var(--text4); }
+.dropzone { border:2px dashed #2A2A2A; border-radius:12px; padding:40px 24px; text-align:center; cursor:pointer; transition:all 0.2s; background:#141414; margin-bottom:20px; }
+.dropzone.active { border-color:var(--gold); background:#1A1700; }
+.dropzone .drop-text { font-size:15px; font-weight:500; color:var(--text2); margin:8px 0 4px; }
+.dropzone .drop-hint { font-size:12px; color:var(--text4); }
 
 /* ── File chips ── */
-.chips { display: flex; flex-wrap: wrap; gap: 8px; }
-.chip { display: flex; align-items: center; gap: 8px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; font-size: 13px; animation: fadeIn 0.15s ease; }
-.chip-name { color: var(--text2); max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.chip-size { color: var(--text4); font-size: 11px; }
+.chips { display:flex; flex-wrap:wrap; gap:8px; }
+.chip { display:flex; align-items:center; gap:8px; background:var(--card); border:1px solid var(--border); border-radius:8px; padding:8px 12px; font-size:13px; animation:fadeIn 0.15s ease; }
+.chip-name { color:var(--text2); max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.chip-size { color:var(--text4); font-size:11px; }
+.chip-dot  { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+.chip-dot.pending    { background:#333; }
+.chip-dot.processing { background:var(--gold); animation:pulse 0.9s ease-in-out infinite; }
+.chip-dot.done       { background:var(--green-text); }
+.chip-dot.error      { background:var(--red-text); }
+.chip-msg  { font-size:11px; color:var(--text4); }
+.chip.chip-done  { border-color:#1B5C23; }
+.chip.chip-error { border-color:#5C2020; }
 
 /* ── Section ── */
-.section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px; }
-.section-title { font-size: 15px; font-weight: 600; color: #F3F4F6; display: flex; align-items: center; gap: 8px; }
-.badge { background: var(--gold); color: #111; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 10px; }
-.spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid #111; border-top-color: transparent; border-radius: 50%; animation: spin 0.6s linear infinite; vertical-align: middle; margin-right: 6px; }
+.section-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:10px; }
+.section-title  { font-size:15px; font-weight:600; color:#F3F4F6; display:flex; align-items:center; gap:8px; }
+.badge   { background:var(--gold); color:#111; font-size:11px; font-weight:700; padding:2px 8px; border-radius:10px; }
+.spinner { display:inline-block; width:14px; height:14px; border:2px solid #111; border-top-color:transparent; border-radius:50%; animation:spin 0.6s linear infinite; vertical-align:middle; margin-right:6px; }
 
 /* ── Status bars ── */
-.bar-ok { background: var(--green-bg); border: 1px solid var(--green-border); border-radius: 8px; padding: 10px 16px; margin-bottom: 12px; font-size: 13px; color: var(--green-text); animation: fadeIn 0.2s ease; }
-.bar-err { background: var(--red-bg); border: 1px solid var(--red-border); border-radius: 8px; padding: 10px 16px; margin-bottom: 16px; font-size: 13px; color: var(--red-text); display: flex; justify-content: space-between; align-items: center; animation: fadeIn 0.2s ease; }
+.bar-ok  { background:var(--green-bg); border:1px solid var(--green-border); border-radius:8px; padding:10px 16px; margin-bottom:12px; font-size:13px; color:var(--green-text); animation:fadeIn 0.2s ease; }
+.bar-err { background:var(--red-bg); border:1px solid var(--red-border); border-radius:8px; padding:10px 16px; margin-bottom:16px; font-size:13px; color:var(--red-text); display:flex; justify-content:space-between; align-items:center; animation:fadeIn 0.2s ease; }
 
 /* ── Table ── */
-.table-wrap { overflow-x: auto; border-radius: 10px; border: 1px solid var(--border); }
-table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 700px; }
-th { background: var(--card); padding: 10px 12px; text-align: left; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text3); border-bottom: 1px solid var(--border); white-space: nowrap; }
-td { padding: 9px 12px; border-bottom: 1px solid #1A1A1A; color: #D1D5DB; max-width: 200px; overflow: hidden; text-overflow: ellipsis; }
-tr.even { background: #141414; }
-tr.odd { background: var(--bg); }
+.table-wrap { overflow-x:auto; border-radius:10px; border:1px solid var(--border); }
+table { width:100%; border-collapse:collapse; font-size:13px; min-width:900px; }
+th { background:var(--card); padding:10px 12px; text-align:left; font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:0.06em; color:var(--text3); border-bottom:1px solid var(--border); white-space:nowrap; }
+td { padding:9px 12px; border-bottom:1px solid #1A1A1A; color:#D1D5DB; max-width:180px; overflow:hidden; text-overflow:ellipsis; }
+tr.even { background:#141414; }
+tr.odd  { background:var(--bg); }
+/* Editable cells */
+td.cell-edit { cursor:pointer; }
+td.cell-edit:hover { background:rgba(212,160,74,0.07) !important; }
+td.cell-edit:hover::after { content:" ✎"; color:#444; font-size:10px; }
+/* Computed cells */
+td.cell-computed { color:var(--gold); font-weight:500; }
+/* Edit input inside cell */
+td input.cell-input {
+  width:100%; background:#0D0D0D; border:1px solid var(--gold);
+  color:#E5E7EB; padding:3px 6px; border-radius:4px; font-size:12px;
+  font-family:inherit; outline:none; min-width:80px;
+}
 
 /* ── Badge row ── */
-.badge-row { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
-.badge-card { flex: 1 1 240px; display: flex; justify-content: space-between; align-items: center; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; animation: fadeIn 0.2s ease; }
-.badge-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text3); margin-bottom: 2px; }
-.badge-value { font-size: 15px; font-weight: 600; color: #F3F4F6; }
-.badge-orig { font-size: 11px; color: var(--text4); margin-top: 1px; }
-.incoterm-badge { background: var(--gold); color: #111; font-weight: 700; font-size: 13px; padding: 3px 10px; border-radius: 4px; letter-spacing: 0.03em; }
+.badge-row  { display:flex; gap:12px; margin-bottom:20px; flex-wrap:wrap; }
+.badge-card { flex:1 1 240px; display:flex; justify-content:space-between; align-items:center; background:var(--card); border:1px solid var(--border); border-radius:8px; padding:12px 16px; animation:fadeIn 0.2s ease; }
+.badge-label { font-size:10px; text-transform:uppercase; letter-spacing:0.06em; color:var(--text3); margin-bottom:2px; }
+.badge-value { font-size:15px; font-weight:600; color:#F3F4F6; }
+.badge-orig  { font-size:11px; color:var(--text4); margin-top:1px; }
+.incoterm-badge { background:var(--gold); color:#111; font-weight:700; font-size:13px; padding:3px 10px; border-radius:4px; letter-spacing:0.03em; }
 
-/* ── Empty state ── */
-.empty { text-align: center; padding: 48px 24px; background: #141414; border-radius: 10px; border: 1px solid #1A1A1A; color: var(--text4); font-size: 14px; }
+/* ── Empty / Modal ── */
+.empty   { text-align:center; padding:48px 24px; background:#141414; border-radius:10px; border:1px solid #1A1A1A; color:var(--text4); font-size:14px; }
+.overlay { position:fixed; inset:0; background:rgba(0,0,0,0.8); display:flex; align-items:center; justify-content:center; z-index:100; padding:20px; backdrop-filter:blur(4px); animation:fadeIn 0.2s ease; }
+.modal   { background:#1A1A1A; border:1px solid #2A2A2A; border-radius:14px; padding:28px; max-width:560px; width:100%; }
+.modal-title { font-size:17px; font-weight:700; color:#F3F4F6; text-align:center; margin-bottom:8px; }
+.modal-desc  { font-size:13px; color:#888; text-align:center; line-height:1.5; margin-bottom:20px; }
+.modal-btns  { display:flex; justify-content:space-between; align-items:center; margin-top:20px; gap:12px; }
+.field-label { font-size:12px; color:var(--text3); display:block; margin-bottom:6px; }
+.incoterm-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.incoterm-opt  { background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:10px 12px; cursor:pointer; text-align:left; font-family:inherit; color:var(--text2); transition:all 0.15s; }
+.incoterm-opt:hover { border-color:#444; }
+.incoterm-opt.selected { border-color:var(--gold); background:#1A1700; }
+.incoterm-code  { display:block; font-size:15px; font-weight:700; color:var(--gold); margin-bottom:2px; }
+.incoterm-label { font-size:11px; color:var(--text3); line-height:1.3; }
 
-/* ── Modal ── */
-.overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 20px; backdrop-filter: blur(4px); animation: fadeIn 0.2s ease; }
-.modal { background: #1A1A1A; border: 1px solid #2A2A2A; border-radius: 14px; padding: 28px; max-width: 560px; width: 100%; }
-.modal-title { font-size: 17px; font-weight: 700; color: #F3F4F6; text-align: center; margin-bottom: 8px; }
-.modal-desc { font-size: 13px; color: #888; text-align: center; line-height: 1.5; margin-bottom: 20px; }
-.modal-btns { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; gap: 12px; }
-.field-label { font-size: 12px; color: var(--text3); display: block; margin-bottom: 6px; }
-.incoterm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.incoterm-opt { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; cursor: pointer; text-align: left; font-family: inherit; color: var(--text2); transition: all 0.15s; }
-.incoterm-opt:hover { border-color: #444; }
-.incoterm-opt.selected { border-color: var(--gold); background: #1A1700; }
-.incoterm-code { display: block; font-size: 15px; font-weight: 700; color: var(--gold); margin-bottom: 2px; }
-.incoterm-label { font-size: 11px; color: var(--text3); line-height: 1.3; }
-
-.hidden { display: none !important; }
-.actions-row { display: flex; gap: 8px; }
-
-/* ── Model Toggle ── */
-.model-toggle { display: flex; gap: 8px; }
-.model-btn { flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; cursor: pointer; text-align: left; font-family: inherit; transition: all 0.15s; }
-.model-btn:hover { border-color: #444; }
-.model-btn.selected { border-color: var(--gold); background: #1A1700; }
-.model-btn-name { display: block; font-size: 14px; font-weight: 600; color: var(--text); }
-.model-btn-note { display: block; font-size: 11px; color: var(--text4); margin-top: 2px; }
-.model-btn.selected .model-btn-name { color: var(--gold); }
-.model-btn.selected .model-btn-note { color: #8a7a4a; }
+.hidden { display:none !important; }
+.actions-row { display:flex; gap:8px; }
+.model-toggle { display:flex; gap:8px; }
+.model-btn { flex:1; background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:10px 14px; cursor:pointer; text-align:left; font-family:inherit; transition:all 0.15s; }
+.model-btn:hover { border-color:#444; }
+.model-btn.selected { border-color:var(--gold); background:#1A1700; }
+.model-btn-name { display:block; font-size:14px; font-weight:600; color:var(--text); }
+.model-btn-note { display:block; font-size:11px; color:var(--text4); margin-top:2px; }
+.model-btn.selected .model-btn-name { color:var(--gold); }
+.model-btn.selected .model-btn-note { color:#8a7a4a; }
 </style>
 </head>
 <body>
@@ -148,9 +149,9 @@ tr.odd { background: var(--bg); }
 <div class="header">
   <div class="header-left">
     <svg width="30" height="30" viewBox="0 0 30 30" fill="none">
-      <rect x="2" y="2" width="11" height="11" rx="2.5" fill="#D4A04A"/>
-      <rect x="17" y="2" width="11" height="11" rx="2.5" fill="#D4A04A" opacity="0.55"/>
-      <rect x="2" y="17" width="11" height="11" rx="2.5" fill="#D4A04A" opacity="0.55"/>
+      <rect x="2"  y="2"  width="11" height="11" rx="2.5" fill="#D4A04A"/>
+      <rect x="17" y="2"  width="11" height="11" rx="2.5" fill="#D4A04A" opacity="0.55"/>
+      <rect x="2"  y="17" width="11" height="11" rx="2.5" fill="#D4A04A" opacity="0.55"/>
       <rect x="17" y="17" width="11" height="11" rx="2.5" fill="#D4A04A" opacity="0.25"/>
     </svg>
     <div>
@@ -208,11 +209,11 @@ tr.odd { background: var(--bg); }
     <path d="M8 28V38C8 39.1 8.9 40 10 40H38C39.1 40 40 39.1 40 38V28" stroke="#4B5563" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
   </svg>
   <p class="drop-text" id="dropText">Drop procurement docs here, or click to browse</p>
-  <p class="drop-hint">PNG, JPG, PDF — Chinese &amp; English</p>
+  <p class="drop-hint">PNG, JPG, PDF — or paste with Ctrl+V / ⌘V</p>
   <input type="file" id="fileInput" multiple accept="image/*,application/pdf" style="display:none">
 </div>
 
-<!-- ═══ BADGE ROW (date + incoterm) ═══ -->
+<!-- ═══ BADGE ROW (date + incoterm session overrides) ═══ -->
 <div class="badge-row hidden" id="badgeRow"></div>
 
 <!-- ═══ ERROR BAR ═══ -->
@@ -221,7 +222,7 @@ tr.odd { background: var(--bg); }
 <!-- ═══ FILE QUEUE ═══ -->
 <div class="hidden" id="queueSection" style="margin-bottom:20px">
   <div class="section-header">
-    <div class="section-title">Queued <span class="badge" id="queueCount">0</span></div>
+    <div class="section-title">Files <span class="badge" id="queueCount">0</span></div>
     <button class="btn btn-primary" id="extractBtn">Extract All</button>
   </div>
   <div class="chips" id="queueChips"></div>
@@ -232,10 +233,12 @@ tr.odd { background: var(--bg); }
   <div class="section-header">
     <div class="section-title">Extracted Items <span class="badge" id="resultsCount">0</span></div>
     <div class="actions-row">
+      <button class="btn-csv" id="csvBtn">⬇ Download CSV</button>
       <button class="btn btn-ghost" id="clearBtn">Clear All</button>
       <button class="btn btn-green" id="sheetsBtn">Send to Google Sheets →</button>
     </div>
   </div>
+  <p style="font-size:11px;color:var(--text4);margin-bottom:10px;">Click any cell to edit its value.</p>
   <div class="hidden" id="sheetStatus"></div>
   <div class="table-wrap"><table><thead><tr id="tableHead"></tr></thead><tbody id="tableBody"></tbody></table></div>
 </div>
@@ -255,7 +258,7 @@ tr.odd { background: var(--bg); }
       </svg>
     </div>
     <div class="modal-title">Quote Date Not Found</div>
-    <div class="modal-desc">No quotation or document date was detected. Please enter the date of this quote:</div>
+    <div class="modal-desc">No quotation date was detected in any uploaded file. Enter one to apply as a fallback to all rows missing a date:</div>
     <div>
       <label class="field-label">Quote / Document Date</label>
       <input type="date" class="input" id="manualDateInput" style="background:#0D0D0D;color-scheme:dark">
@@ -277,11 +280,11 @@ tr.odd { background: var(--bg); }
       </svg>
     </div>
     <div class="modal-title">INCOTERMS Not Detected</div>
-    <div class="modal-desc">No trade terms were found in the uploaded document. Select the applicable INCOTERM:</div>
+    <div class="modal-desc">No trade terms were found in any uploaded file. Select one to apply as a fallback to all rows:</div>
     <div class="incoterm-grid" id="incotermGrid"></div>
     <div style="margin-top:16px">
-      <label class="field-label">Port / Location (optional)</label>
-      <input type="text" class="input" id="incotermPort" placeholder="e.g. Shanghai, Singapore, Shenzhen" style="background:#0D0D0D">
+      <label class="field-label">Destination Country <span style="color:#555">(for CIF — leave blank if FOB)</span></label>
+      <input type="text" class="input" id="incotermPort" placeholder="e.g. Singapore, USA, Australia" style="background:#0D0D0D">
     </div>
     <div class="modal-btns">
       <button class="btn btn-skip" id="incotermSkip">Skip — not applicable</button>
@@ -297,24 +300,38 @@ tr.odd { background: var(--bg); }
 const APPS_SCRIPT_TEMPLATE = `function doPost(e) {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
   var data = JSON.parse(e.postData.contents);
-  var columns = data.columns || [];
   var rows = data.rows || [];
-  var incoterm = data.incoterm || "";
-  var quoteDate = data.quote_date || "";
 
   if (sheet.getLastRow() === 0) {
-    var headers = ["Timestamp", "Quote Date", "INCOTERM", "Source File"].concat(columns);
+    var headers = [
+      "Quote Date", "Supplier", "Specification", "Paper tube (mm)",
+      "Packaging Type", "Net Weight (kg)", "Gross Weight (kg)",
+      "MOQ", "Lead Time", "Quote Validity",
+      "INCOTERM", "Price / roll", "Price / kg", "Source file", "Timestamp"
+    ];
     sheet.appendRow(headers);
     sheet.getRange(1, 1, 1, headers.length).setFontWeight("bold");
   }
 
   for (var i = 0; i < rows.length; i++) {
     var r = rows[i];
-    var rowData = [new Date().toISOString(), quoteDate, incoterm, r._source_file || ""];
-    for (var j = 0; j < columns.length; j++) {
-      rowData.push(r[columns[j]] || "");
-    }
-    sheet.appendRow(rowData);
+    sheet.appendRow([
+      r.quote_date      || "",
+      r.supplier        || "",
+      r.specification   || "",
+      r.paper_tube_mm   || "",
+      r.packaging_type  || "",
+      r.net_weight_kg   || "",
+      r.gross_weight_kg || "",
+      r.moq             || "",
+      r.lead_time       || "",
+      r.quote_validity  || "",
+      r.incoterm        || "",
+      r.price_per_roll  || "",
+      r.price_per_kg    || "",
+      r._source_file    || "",
+      r._timestamp      || ""
+    ]);
   }
 
   return ContentService
@@ -322,81 +339,111 @@ const APPS_SCRIPT_TEMPLATE = `function doPost(e) {
     .setMimeType(ContentService.MimeType.JSON);
 }`;
 
-const EXTRACTION_PROMPT = `You are a procurement data extraction specialist. Analyze this document (purchase order, quotation, invoice, or procurement screenshot) and extract ALL line items.
+const EXTRACTION_PROMPT = `You are a procurement data extraction specialist for cling wrap and packaging film products. Analyze this document (purchase order, quotation, invoice, or procurement screenshot) and extract ALL line items.
 
-IMPORTANT RULES:
-1. The document may be in Chinese (Simplified or Traditional) or mixed Chinese/English. Translate all Chinese text to English. For item/product names, provide BOTH the English translation AND the original Chinese in the same cell like: "English Name (原文中文)"
-2. Preserve the EXACT column structure from the source document. Use the same column headers as the document — do not invent your own. If headers are in Chinese, translate them to English.
-3. For any price/cost column, always prepend the currency symbol or code (e.g. "RMB 12.50", "USD 3.20", "¥12.50"). If the document states a currency, use it. If not obvious, default to "RMB" for Chinese documents.
-4. Look for INCOTERMS anywhere in the document (FOB, CIF, CFR, EXW, DDP, FCA, DAP, etc.). Report what you find.
-5. Look for the QUOTATION DATE / DOCUMENT DATE. This is often found near the top-right, bottom-right, or in the header/footer of the document. It may be labeled as "Date", "日期", "报价日期", "Quotation Date", "Invoice Date", etc. Extract it in YYYY-MM-DD format if possible.
+STRICT RULES:
+1. OUTPUT ENGLISH ONLY — do NOT include any Chinese characters anywhere in any field value. Translate all Chinese text to English.
+2. Extract each row using EXACTLY these field keys:
+   - "supplier": Company name of the supplier / seller in English only. Look for it in the header, letterhead, or footer.
+   - "specification": Product description / grade / film type in English only (e.g. "PE Cling Film", "PVC Stretch Wrap", "Biodegradable Wrap")
+   - "paper_tube_mm": Core / paper tube inner diameter in mm — number only (e.g. "76" or "152"). Leave blank if not stated.
+   - "packaging_type": Packaging format in English (e.g. "Roll", "Retail Box", "Industrial Roll", "Jumbo Roll")
+   - "net_weight_kg": Net weight per roll/unit in kg — number only (e.g. "1.5"). Leave blank if not stated.
+   - "gross_weight_kg": Gross weight per roll/unit in kg — number only (e.g. "1.8"). Leave blank if not stated.
+   - "moq": Minimum order quantity (e.g. "500 rolls", "1000 pcs", "5 cartons"). Leave blank if not stated.
+   - "lead_time": Production or delivery lead time in English (e.g. "30 days", "4–6 weeks"). Leave blank if not stated.
+   - "quote_validity": Validity period of the quote (e.g. "30 days", "valid until 2025-06-30"). Leave blank if not stated.
+   - "price_per_roll": Unit price — MUST be prefixed with "USD" or "RMB" only (e.g. "USD 3.20" or "RMB 12.50"). No other currency codes. Default to RMB for Chinese documents if currency unclear.
+3. INCOTERM: Look for trade terms in the document. Only recognise "FOB" or "CIF". If CIF, append the destination country (e.g. "CIF Singapore"). If neither is found, return null.
+4. QUOTE DATE: Find the quotation or document date (may be labelled Date / 日期 / 报价日期 / Quotation Date). Return in YYYY-MM-DD format. If not found, return null.
 
 Return ONLY valid JSON — no markdown, no backticks, no preamble. Use this exact structure:
 
 {
-  "columns": ["Column Header 1", "Column Header 2", "..."],
   "rows": [
     {
-      "Column Header 1": "value (translated if Chinese, with original in parentheses)",
-      "Column Header 2": "value with currency prefix for price columns"
+      "supplier": "English company name",
+      "specification": "English description only",
+      "paper_tube_mm": "76",
+      "packaging_type": "Roll",
+      "net_weight_kg": "1.5",
+      "gross_weight_kg": "1.8",
+      "moq": "500 rolls",
+      "lead_time": "30 days",
+      "quote_validity": "30 days",
+      "price_per_roll": "USD 3.20"
     }
   ],
-  "incoterm": "FOB / CIF / EXW / etc. or null if not found",
-  "incoterm_detail": "e.g. FOB Shanghai, CIF Singapore — include port if mentioned, or null",
-  "quote_date": "YYYY-MM-DD or the date string as found in the document, or null if not found",
-  "quote_date_original": "the raw date text as it appears in the document, or null",
-  "currency_detected": "RMB / USD / SGD / etc.",
-  "document_summary": "Brief 1-line description of the document"
+  "incoterm": "FOB or CIF [Country] or null",
+  "incoterm_detail": "e.g. FOB Shanghai or CIF Singapore or null",
+  "quote_date": "YYYY-MM-DD or null",
+  "quote_date_original": "raw date text as it appears in the document, or null"
 }
 
-Be thorough — extract EVERY line item. Preserve the document's own column structure exactly.`;
+Be thorough — extract EVERY line item. If a field is absent from the document, use an empty string.`;
 
 const INCOTERMS = [
-  { code: "FOB", label: "Free on Board (seller delivers to port of shipment)" },
-  { code: "CIF", label: "Cost, Insurance & Freight (seller pays to destination port)" },
-  { code: "CFR", label: "Cost & Freight (like CIF but no insurance)" },
-  { code: "EXW", label: "Ex Works (buyer handles everything from seller's premises)" },
-  { code: "FCA", label: "Free Carrier (seller delivers to carrier at named place)" },
-  { code: "DAP", label: "Delivered at Place (seller bears all costs to destination)" },
-  { code: "DDP", label: "Delivered Duty Paid (seller bears all costs incl. import duty)" },
-  { code: "CIP", label: "Carriage & Insurance Paid To (named destination)" },
+  { code: "FOB", label: "Free on Board — seller delivers to port of shipment" },
+  { code: "CIF", label: "Cost, Insurance & Freight — seller pays to destination port" },
+];
+
+// Fixed column definitions
+// editable: user can click to edit | computed: derived from other fields | neither = read-only
+const DISPLAY_COLS = [
+  { label: "Quote Date",        key: "quote_date",      editable: true  },
+  { label: "Supplier",          key: "supplier",         editable: true  },
+  { label: "Specification",     key: "specification",    editable: true  },
+  { label: "Paper tube (mm)",   key: "paper_tube_mm",   editable: true  },
+  { label: "Packaging Type",    key: "packaging_type",  editable: true  },
+  { label: "Net Weight (kg)",   key: "net_weight_kg",   editable: true  },
+  { label: "Gross Weight (kg)", key: "gross_weight_kg", editable: true  },
+  { label: "MOQ",               key: "moq",              editable: true  },
+  { label: "Lead Time",         key: "lead_time",        editable: true  },
+  { label: "Quote Validity",    key: "quote_validity",   editable: true  },
+  { label: "INCOTERM",          key: "incoterm",         editable: true  },
+  { label: "Price / roll",      key: "price_per_roll",  editable: true  },
+  { label: "Price / kg",        key: "_price_per_kg",   computed: true  },
+  { label: "Source file",       key: "_source_file",    readonly: true  },
+  { label: "Timestamp",         key: "_timestamp",      readonly: true  },
 ];
 
 // ══════════════════════════════════════════════════════════════
 //  STATE
 // ══════════════════════════════════════════════════════════════
-let files = [];
-let results = [];
-let columns = [];
-let processing = false;
+let files        = [];
+let results      = [];
+let processing   = false;
 let selectedModel = "claude-haiku-4-5-20251001";
-let detectedIncoterm = null;
-let incotermDetail = "";
-let incotermConfirmed = false;
-let selectedIncoterm = "";
-let quoteDate = "";
-let quoteDateOriginal = "";
+// Session-level fallback overrides (applied to rows that have no per-row value)
+let detectedIncoterm   = null;
+let incotermDetail     = "";
+let incotermConfirmed  = false;
+let selectedIncoterm   = "";
+let quoteDate          = "";
+let quoteDateOriginal  = "";
 let quoteDateConfirmed = false;
 let pendingIncotermPrompt = false;
+// Parallel processing state
+let fileStatus = new Map(); // filename → { state: 'pending'|'processing'|'done'|'error', count?, msg? }
+// Inline editing guard
+let editingCell = null; // { ri, key } — prevents render() from blowing away an active <input>
 
 // ══════════════════════════════════════════════════════════════
 //  DOM REFS
 // ══════════════════════════════════════════════════════════════
-const $ = (sel) => document.querySelector(sel);
+const $  = (sel) => document.querySelector(sel);
 const $$ = (sel) => document.querySelectorAll(sel);
 
 // ══════════════════════════════════════════════════════════════
 //  INIT
 // ══════════════════════════════════════════════════════════════
 document.addEventListener("DOMContentLoaded", () => {
-  // Load saved keys
-  const savedKey = localStorage.getItem("pe_api_key") || "";
-  const savedWebhook = localStorage.getItem("pe_webhook") || "";
-  $("#apiKeyInput").value = savedKey;
+  const savedKey     = localStorage.getItem("pe_api_key")  || "";
+  const savedWebhook = localStorage.getItem("pe_webhook")  || "";
+  $("#apiKeyInput").value  = savedKey;
   $("#webhookInput").value = savedWebhook;
   if (savedKey) $("#apiKeyHint").textContent = "✓ Key saved from previous session.";
 
-  // Load saved model (default: haiku)
   const savedModel = localStorage.getItem("pe_model") || "claude-haiku-4-5-20251001";
   selectedModel = savedModel;
   document.querySelectorAll(".model-btn").forEach(btn => {
@@ -408,7 +455,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // Persist on change
   $("#apiKeyInput").addEventListener("input", (e) => {
     localStorage.setItem("pe_api_key", e.target.value);
     $("#apiKeyHint").textContent = e.target.value ? "Key saved to browser." : "";
@@ -417,47 +463,60 @@ document.addEventListener("DOMContentLoaded", () => {
     localStorage.setItem("pe_webhook", e.target.value);
   });
 
-  // Script display
   $("#scriptCode").textContent = APPS_SCRIPT_TEMPLATE;
 
-  // Setup toggle
   $("#setupToggle").addEventListener("click", () => {
     const p = $("#setupPanel");
     p.classList.toggle("hidden");
     $("#setupToggle").textContent = p.classList.contains("hidden") ? "⚙ Sheets Setup" : "✕ Close";
   });
 
-  // Copy script
   $("#copyScript").addEventListener("click", () => {
     navigator.clipboard.writeText(APPS_SCRIPT_TEMPLATE);
     $("#copyScript").textContent = "Copied!";
-    setTimeout(() => $("#copyScript").textContent = "Copy", 1500);
+    setTimeout(() => { $("#copyScript").textContent = "Copy"; }, 1500);
   });
 
   // Dropzone
   const dz = $("#dropzone");
   dz.addEventListener("click", () => $("#fileInput").click());
-  dz.addEventListener("dragover", (e) => { e.preventDefault(); dz.classList.add("active"); $("#dropText").textContent = "Drop files here"; });
-  dz.addEventListener("dragleave", () => { dz.classList.remove("active"); $("#dropText").textContent = "Drop procurement docs here, or click to browse"; });
-  dz.addEventListener("drop", (e) => { e.preventDefault(); dz.classList.remove("active"); $("#dropText").textContent = "Drop procurement docs here, or click to browse"; addFiles(e.dataTransfer.files); });
+  dz.addEventListener("dragover",  (e) => { e.preventDefault(); dz.classList.add("active"); $("#dropText").textContent = "Drop files here"; });
+  dz.addEventListener("dragleave", ()  => { dz.classList.remove("active"); $("#dropText").textContent = "Drop procurement docs here, or click to browse"; });
+  dz.addEventListener("drop",      (e) => { e.preventDefault(); dz.classList.remove("active"); $("#dropText").textContent = "Drop procurement docs here, or click to browse"; addFiles(e.dataTransfer.files); });
   $("#fileInput").addEventListener("change", (e) => { addFiles(e.target.files); e.target.value = ""; });
 
-  // Extract
+  // Clipboard paste (Ctrl+V / ⌘V)
+  document.addEventListener("paste", (e) => {
+    const tag = document.activeElement.tagName;
+    if (tag === "INPUT" || tag === "TEXTAREA") return;
+    const items = (e.clipboardData || e.originalEvent?.clipboardData)?.items;
+    if (!items) return;
+    const imageFiles = [];
+    for (const item of items) {
+      if (item.kind === "file" && item.type.startsWith("image/")) {
+        const file = item.getAsFile();
+        if (file) {
+          const ext = file.type.split("/")[1] || "png";
+          imageFiles.push(new File([file], `pasted-${Date.now()}.${ext}`, { type: file.type }));
+        }
+      }
+    }
+    if (imageFiles.length > 0) {
+      addFiles(imageFiles);
+      dz.classList.add("active");
+      $("#dropText").textContent = `✓ ${imageFiles.length} image${imageFiles.length > 1 ? "s" : ""} pasted`;
+      setTimeout(() => { dz.classList.remove("active"); $("#dropText").textContent = "Drop procurement docs here, or click to browse"; }, 1800);
+    }
+  });
+
   $("#extractBtn").addEventListener("click", processAll);
-
-  // Clear
   $("#clearBtn").addEventListener("click", clearAll);
-
-  // Send to Sheets
   $("#sheetsBtn").addEventListener("click", sendToSheets);
-
-  // Error close
+  $("#csvBtn").addEventListener("click", downloadCSV);
   $("#errorClose").addEventListener("click", hideError);
 
   // Date modal
-  $("#manualDateInput").addEventListener("input", (e) => {
-    $("#dateConfirm").disabled = !e.target.value;
-  });
+  $("#manualDateInput").addEventListener("input", (e) => { $("#dateConfirm").disabled = !e.target.value; });
   $("#dateConfirm").addEventListener("click", confirmDate);
   $("#dateSkip").addEventListener("click", skipDate);
 
@@ -475,23 +534,32 @@ document.addEventListener("DOMContentLoaded", () => {
 function addFiles(fileList) {
   const valid = Array.from(fileList).filter(f => f.type === "application/pdf" || f.type.startsWith("image/"));
   if (valid.length === 0) { showError("Please upload images (PNG, JPG) or PDFs only."); return; }
-  files.push(...valid);
-  hideError();
-  render();
+
+  const dupes = [];
+  const fresh = [];
+  valid.forEach(f => {
+    const inQueue   = files.some(x => x.name === f.name);
+    const inResults = results.some(r => r._source_file === f.name);
+    if (inQueue || inResults) dupes.push(f.name);
+    else fresh.push(f);
+  });
+
+  if (dupes.length > 0) {
+    showError(`Duplicate${dupes.length > 1 ? "s" : ""} skipped (already queued or extracted): ${dupes.join(", ")}`);
+  }
+  if (fresh.length > 0) {
+    files.push(...fresh);
+    if (dupes.length === 0) hideError();
+    render();
+  }
 }
 
-function removeFile(idx) {
-  files.splice(idx, 1);
-  render();
-}
+function removeFile(idx) { files.splice(idx, 1); render(); }
 
-// ══════════════════════════════════════════════════════════════
-//  API CALL
-// ══════════════════════════════════════════════════════════════
 function readFileAsBase64(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onload = () => resolve(reader.result.split(",")[1]);
+    reader.onload  = () => resolve(reader.result.split(",")[1]);
     reader.onerror = () => reject(new Error("Failed to read file"));
     reader.readAsDataURL(file);
   });
@@ -505,7 +573,7 @@ async function extractFromFile(file) {
   const isPdf = file.type === "application/pdf";
   const contentBlock = isPdf
     ? { type: "document", source: { type: "base64", media_type: "application/pdf", data: base64Data } }
-    : { type: "image", source: { type: "base64", media_type: file.type, data: base64Data } };
+    : { type: "image",    source: { type: "base64", media_type: file.type,           data: base64Data } };
 
   const resp = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
@@ -517,7 +585,7 @@ async function extractFromFile(file) {
     },
     body: JSON.stringify({
       model: selectedModel,
-      max_tokens: 4000,
+      max_tokens: 4096,
       messages: [{ role: "user", content: [contentBlock, { type: "text", text: EXTRACTION_PROMPT }] }],
     }),
   });
@@ -533,62 +601,116 @@ async function extractFromFile(file) {
 }
 
 // ══════════════════════════════════════════════════════════════
-//  PROCESS ALL
+//  PROCESS ALL — parallel with concurrency limit of 3
 // ══════════════════════════════════════════════════════════════
 async function processAll() {
   if (processing || files.length === 0) return;
   processing = true;
+  fileStatus = new Map(files.map(f => [f.name, { state: "pending" }]));
   hideError();
   render();
 
-  let foundIncoterm = detectedIncoterm;
-  let foundDetail = incotermDetail;
-  let foundDate = quoteDate;
-  let foundDateOrig = quoteDateOriginal;
+  const batch = [...files]; // snapshot
+  const CONCURRENCY = 3;
+  let idx = 0;
 
-  for (let i = 0; i < files.length; i++) {
-    const file = files[i];
-    updateExtractBtn(file.name);
-    try {
-      const extracted = await extractFromFile(file);
-      const docCols = extracted.columns || [];
-      docCols.forEach(col => { if (!columns.includes(col)) columns.push(col); });
-      const items = (extracted.rows || []).map(row => ({ ...row, _source_file: file.name }));
-      results.push(...items);
-      if (extracted.incoterm && !foundIncoterm) {
-        foundIncoterm = extracted.incoterm;
-        foundDetail = extracted.incoterm_detail || extracted.incoterm;
+  async function worker() {
+    while (idx < batch.length) {
+      const i    = idx++;
+      const file = batch[i];
+      fileStatus.set(file.name, { state: "processing" });
+      render();
+      try {
+        const extracted = await extractFromFile(file);
+        const ts         = new Date().toISOString();
+        const docDate    = extracted.quote_date || "";
+        const docIncoterm = extracted.incoterm_detail || extracted.incoterm || "";
+
+        // Inject document-level date & incoterm into each row
+        const items = (extracted.rows || []).map(row => ({
+          ...row,
+          quote_date:  row.quote_date  || docDate,
+          incoterm:    row.incoterm    || docIncoterm,
+          _source_file: file.name,
+          _timestamp:   ts,
+        }));
+        results.push(...items);
+
+        // Update session fallbacks (first found wins)
+        if (docDate    && !quoteDate)        { quoteDate = docDate; quoteDateOriginal = extracted.quote_date_original || docDate; }
+        if (docIncoterm && !detectedIncoterm) { detectedIncoterm = extracted.incoterm || docIncoterm; incotermDetail = docIncoterm; }
+
+        fileStatus.set(file.name, { state: "done", count: items.length });
+      } catch (err) {
+        fileStatus.set(file.name, { state: "error", msg: err.message });
+        showError("Error — " + file.name + ": " + err.message);
       }
-      if (extracted.quote_date && !foundDate) {
-        foundDate = extracted.quote_date;
-        foundDateOrig = extracted.quote_date_original || extracted.quote_date;
-      }
-    } catch (err) {
-      showError("Error processing " + file.name + ": " + err.message);
+      render();
     }
   }
 
-  files = [];
+  // Launch CONCURRENCY workers
+  await Promise.all(Array.from({ length: Math.min(CONCURRENCY, batch.length) }, worker));
+
+  files      = [];
   processing = false;
 
-  if (foundIncoterm) { detectedIncoterm = foundIncoterm; incotermDetail = foundDetail; selectedIncoterm = foundIncoterm; incotermConfirmed = true; }
-  if (foundDate) { quoteDate = foundDate; quoteDateOriginal = foundDateOrig; quoteDateConfirmed = true; }
+  // Auto-confirm if found; prompt if not
+  if (quoteDate    && !quoteDateConfirmed)  { quoteDateConfirmed  = true; }
+  if (detectedIncoterm && !incotermConfirmed) { selectedIncoterm = detectedIncoterm; incotermConfirmed = true; }
 
   render();
 
-  // Chain prompts
-  if (!foundDate && !quoteDateConfirmed) {
-    if (!foundIncoterm && !incotermConfirmed) pendingIncotermPrompt = true;
+  if (!quoteDateConfirmed) {
+    if (!incotermConfirmed) pendingIncotermPrompt = true;
     showModal("dateModal");
-  } else if (!foundIncoterm && !incotermConfirmed) {
+  } else if (!incotermConfirmed) {
     showModal("incotermModal");
   }
 }
 
-function updateExtractBtn(name) {
-  const btn = $("#extractBtn");
-  btn.innerHTML = '<span class="spinner"></span> Processing ' + escHtml(name) + '…';
-  btn.disabled = true;
+// ══════════════════════════════════════════════════════════════
+//  COMPUTED FIELD
+// ══════════════════════════════════════════════════════════════
+function computePricePerKg(row) {
+  const priceStr  = (row.price_per_roll  || "").trim();
+  const weightStr = (row.net_weight_kg   || "").trim();
+  if (!priceStr || !weightStr) return "";
+  const currency = priceStr.startsWith("USD") ? "USD" : priceStr.startsWith("RMB") ? "RMB" : "";
+  const price  = parseFloat(priceStr.replace(/[A-Za-z\s]/g, ""));
+  const weight = parseFloat(weightStr.replace(/[A-Za-z\s]/g, ""));
+  if (isNaN(price) || isNaN(weight) || weight <= 0) return "";
+  return `${currency ? currency + " " : ""}${(price / weight).toFixed(2)}`;
+}
+
+// ══════════════════════════════════════════════════════════════
+//  INLINE CELL EDITING
+// ══════════════════════════════════════════════════════════════
+function startEditCell(td, ri, key, currentVal) {
+  if (editingCell) return; // one edit at a time
+  editingCell = { ri, key };
+
+  const input = document.createElement("input");
+  input.className   = "cell-input";
+  input.value       = (currentVal === "—" || currentVal === "") ? "" : currentVal;
+  input.placeholder = "—";
+  td.textContent    = "";
+  td.appendChild(input);
+  input.focus();
+  input.select();
+
+  const save = () => {
+    results[ri][key] = input.value.trim();
+    editingCell = null;
+    render();
+  };
+  const cancel = () => { editingCell = null; render(); };
+
+  input.addEventListener("blur",    save);
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter")  { e.preventDefault(); input.removeEventListener("blur", save); save(); }
+    if (e.key === "Escape") { input.removeEventListener("blur", save); cancel(); }
+  });
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -597,18 +719,14 @@ function updateExtractBtn(name) {
 function confirmDate() {
   const val = $("#manualDateInput").value;
   if (!val) return;
-  quoteDate = val;
-  quoteDateOriginal = "Manual entry";
-  quoteDateConfirmed = true;
-  hideModal("dateModal");
-  render();
+  quoteDate = val; quoteDateOriginal = "Manual entry"; quoteDateConfirmed = true;
+  hideModal("dateModal"); render();
   if (pendingIncotermPrompt) { pendingIncotermPrompt = false; showModal("incotermModal"); }
 }
 
 function skipDate() {
   quoteDateConfirmed = true;
-  hideModal("dateModal");
-  render();
+  hideModal("dateModal"); render();
   if (pendingIncotermPrompt) { pendingIncotermPrompt = false; showModal("incotermModal"); }
 }
 
@@ -616,10 +734,9 @@ function confirmIncoterm() {
   if (!selectedIncoterm) return;
   const port = $("#incotermPort").value.trim();
   detectedIncoterm = selectedIncoterm;
-  incotermDetail = port ? selectedIncoterm + " " + port : selectedIncoterm;
+  incotermDetail   = port ? selectedIncoterm + " " + port : selectedIncoterm;
   incotermConfirmed = true;
-  hideModal("incotermModal");
-  render();
+  hideModal("incotermModal"); render();
 }
 
 function buildIncotermGrid() {
@@ -627,15 +744,15 @@ function buildIncotermGrid() {
   grid.innerHTML = "";
   INCOTERMS.forEach(t => {
     const btn = document.createElement("button");
-    btn.className = "incoterm-opt";
+    btn.className    = "incoterm-opt";
     btn.dataset.code = t.code;
-    btn.innerHTML = `<span class="incoterm-code">${t.code}</span><span class="incoterm-label">${t.label}</span>`;
+    btn.innerHTML    = `<span class="incoterm-code">${t.code}</span><span class="incoterm-label">${t.label}</span>`;
     btn.addEventListener("click", () => {
       $$(".incoterm-opt").forEach(b => b.classList.remove("selected"));
       btn.classList.add("selected");
       selectedIncoterm = t.code;
       const cb = $("#incotermConfirm");
-      cb.disabled = false;
+      cb.disabled    = false;
       cb.textContent = "Confirm " + t.code;
     });
     grid.appendChild(btn);
@@ -651,41 +768,100 @@ async function sendToSheets() {
 
   const btn = $("#sheetsBtn");
   btn.textContent = "Sending…";
-  btn.disabled = true;
+  btn.disabled    = true;
+
+  const fallbackIncoterm   = incotermConfirmed ? (incotermDetail || detectedIncoterm || "") : "";
+  const fallbackQuoteDate  = quoteDateConfirmed ? quoteDate : "";
+
+  const fixedRows = results.map(row => ({
+    quote_date:      row.quote_date      || fallbackQuoteDate,
+    supplier:        row.supplier        || "",
+    specification:   row.specification   || "",
+    paper_tube_mm:   row.paper_tube_mm   || "",
+    packaging_type:  row.packaging_type  || "",
+    net_weight_kg:   row.net_weight_kg   || "",
+    gross_weight_kg: row.gross_weight_kg || "",
+    moq:             row.moq             || "",
+    lead_time:       row.lead_time       || "",
+    quote_validity:  row.quote_validity  || "",
+    incoterm:        row.incoterm        || fallbackIncoterm,
+    price_per_roll:  row.price_per_roll  || "",
+    price_per_kg:    computePricePerKg(row),
+    _source_file:    row._source_file    || "",
+    _timestamp:      row._timestamp      || new Date().toISOString(),
+  }));
 
   try {
     await fetch(url, {
       method: "POST", mode: "no-cors",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        columns, rows: results,
-        incoterm: incotermDetail || detectedIncoterm || "Not specified",
-        quote_date: quoteDate || "Not specified",
-      }),
+      body: JSON.stringify({ rows: fixedRows }),
     });
     showSheetStatus(true, results.length);
   } catch (err) {
     showSheetStatus(false, err.message);
   }
   btn.textContent = "Send to Google Sheets →";
-  btn.disabled = false;
+  btn.disabled    = false;
 }
 
 function showSheetStatus(ok, val) {
   const el = $("#sheetStatus");
-  el.className = ok ? "bar-ok" : "bar-err";
+  el.className   = ok ? "bar-ok" : "bar-err";
   el.textContent = ok ? "✓ Sent " + val + " rows to Google Sheets" : "✕ " + val;
   el.classList.remove("hidden");
+}
+
+// ══════════════════════════════════════════════════════════════
+//  CSV DOWNLOAD
+// ══════════════════════════════════════════════════════════════
+function downloadCSV() {
+  if (results.length === 0) return;
+  const fallbackIncoterm  = incotermConfirmed ? (incotermDetail || detectedIncoterm || "") : "";
+  const fallbackQuoteDate = quoteDateConfirmed ? quoteDate : "";
+
+  const csvEscape = (v) => {
+    const s = String(v ?? "");
+    return (s.includes(",") || s.includes('"') || s.includes("\n"))
+      ? '"' + s.replace(/"/g, '""') + '"'
+      : s;
+  };
+
+  const headers = DISPLAY_COLS.map(c => csvEscape(c.label));
+  const rows = results.map(row => {
+    return DISPLAY_COLS.map(c => {
+      let val;
+      if      (c.key === "quote_date")    val = row.quote_date    || fallbackQuoteDate;
+      else if (c.key === "incoterm")      val = row.incoterm      || fallbackIncoterm;
+      else if (c.key === "_price_per_kg") val = computePricePerKg(row);
+      else                                val = row[c.key] || "";
+      return csvEscape(val);
+    });
+  });
+
+  const csv  = [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
+  const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" }); // BOM for Excel
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement("a");
+  a.href     = url;
+  a.download = `procurement-${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
 
 // ══════════════════════════════════════════════════════════════
 //  CLEAR
 // ══════════════════════════════════════════════════════════════
 function clearAll() {
-  results = []; columns = [];
+  if (results.length > 0 && !confirm(`Clear all ${results.length} extracted row${results.length > 1 ? "s" : ""}? This cannot be undone.`)) return;
+  results = [];
   detectedIncoterm = null; incotermDetail = ""; incotermConfirmed = false; selectedIncoterm = "";
   quoteDate = ""; quoteDateOriginal = ""; quoteDateConfirmed = false;
   pendingIncotermPrompt = false;
+  fileStatus = new Map();
+  editingCell = null;
   $("#sheetStatus").classList.add("hidden");
   render();
 }
@@ -694,70 +870,139 @@ function clearAll() {
 //  ERROR / MODAL HELPERS
 // ══════════════════════════════════════════════════════════════
 function showError(msg) { $("#errorMsg").textContent = msg; $("#errorBar").classList.remove("hidden"); }
-function hideError() { $("#errorBar").classList.add("hidden"); }
-function showModal(id) { $("#" + id).classList.remove("hidden"); }
-function hideModal(id) { $("#" + id).classList.add("hidden"); }
-function escHtml(s) { const d = document.createElement("div"); d.textContent = s; return d.innerHTML; }
-
+function hideError()    { $("#errorBar").classList.add("hidden"); }
+function showModal(id)  { $("#" + id).classList.remove("hidden"); }
+function hideModal(id)  { $("#" + id).classList.add("hidden"); }
+function escHtml(s)     { const d = document.createElement("div"); d.textContent = s; return d.innerHTML; }
 function removeResult(idx) { results.splice(idx, 1); render(); }
 
 // ══════════════════════════════════════════════════════════════
 //  RENDER
 // ══════════════════════════════════════════════════════════════
 function render() {
-  // Queue
-  const hasQueue = files.length > 0;
+  // ── Queue / file status ──
+  const hasQueue = files.length > 0 || fileStatus.size > 0;
   $("#queueSection").classList.toggle("hidden", !hasQueue);
   if (hasQueue) {
-    $("#queueCount").textContent = files.length;
+    // Count for badge: remaining unprocessed queued files
+    const pendingCount = files.length;
+    const totalTracked = fileStatus.size;
+    const doneCount    = [...fileStatus.values()].filter(s => s.state === "done" || s.state === "error").length;
+
+    $("#queueCount").textContent = processing
+      ? `${doneCount}/${totalTracked}`
+      : pendingCount;
+
     const btn = $("#extractBtn");
-    if (!processing) { btn.innerHTML = "Extract All (" + files.length + " files)"; btn.disabled = false; }
+    if (processing) {
+      btn.innerHTML = `<span class="spinner"></span> Extracting ${doneCount}/${totalTracked}…`;
+      btn.disabled  = true;
+    } else {
+      btn.innerHTML = `Extract All (${files.length} file${files.length !== 1 ? "s" : ""})`;
+      btn.disabled  = files.length === 0;
+    }
+
+    // Chips — show active batch from fileStatus, or pending queue
     const chips = $("#queueChips");
     chips.innerHTML = "";
-    files.forEach((f, i) => {
+
+    // Show tracked files (during/after processing)
+    fileStatus.forEach((status, name) => {
       const div = document.createElement("div");
-      div.className = "chip";
-      const icon = f.type === "application/pdf" ? "📄" : "🖼️";
-      const size = (f.size / 1024).toFixed(0);
-      div.innerHTML = `<span>${icon}</span><span class="chip-name">${escHtml(f.name)}</span><span class="chip-size">${size} KB</span>`;
-      if (!processing) {
+      div.className = "chip" + (status.state === "done" ? " chip-done" : status.state === "error" ? " chip-error" : "");
+      const dot = `<span class="chip-dot ${status.state}"></span>`;
+      let extra = "";
+      if (status.state === "done")    extra = `<span class="chip-msg">${status.count} row${status.count !== 1 ? "s" : ""}</span>`;
+      if (status.state === "error")   extra = `<span class="chip-msg" style="color:var(--red-text)" title="${escHtml(status.msg || "")}">error</span>`;
+      if (status.state === "processing") extra = `<span class="chip-msg">reading…</span>`;
+      div.innerHTML = `${dot}<span class="chip-name">${escHtml(name)}</span>${extra}`;
+      chips.appendChild(div);
+    });
+
+    // Show pending files (not yet started) when not processing
+    if (!processing) {
+      files.forEach((f, i) => {
+        if (fileStatus.has(f.name)) return; // already shown above
+        const div = document.createElement("div");
+        div.className = "chip";
+        const icon = f.type === "application/pdf" ? "📄" : "🖼️";
+        const size = (f.size / 1024).toFixed(0);
+        div.innerHTML = `<span>${icon}</span><span class="chip-name">${escHtml(f.name)}</span><span class="chip-size">${size} KB</span>`;
         const x = document.createElement("button");
-        x.className = "btn-x";
+        x.className   = "btn-x";
         x.textContent = "✕";
         x.addEventListener("click", (e) => { e.stopPropagation(); removeFile(i); });
         div.appendChild(x);
-      }
-      chips.appendChild(div);
-    });
+        chips.appendChild(div);
+      });
+    }
   }
 
-  // Results
+  // ── Results table ──
   const hasResults = results.length > 0;
   $("#resultsSection").classList.toggle("hidden", !hasResults);
   if (hasResults) {
     $("#resultsCount").textContent = results.length;
-    // Head
+
+    // Always rebuild the header
     const head = $("#tableHead");
     head.innerHTML = "<th>#</th>";
-    columns.forEach(c => { head.innerHTML += "<th>" + escHtml(c) + "</th>"; });
-    head.innerHTML += "<th>Source</th><th style='width:36px'></th>";
-    // Body
-    const body = $("#tableBody");
-    body.innerHTML = "";
-    results.forEach((row, ri) => {
-      const tr = document.createElement("tr");
-      tr.className = ri % 2 === 0 ? "even" : "odd";
-      let cells = `<td style="color:#555;font-size:11px">${ri + 1}</td>`;
-      columns.forEach(c => { cells += `<td>${escHtml(row[c] || "—")}</td>`; });
-      cells += `<td style="font-size:11px;color:#555;max-width:110px;overflow:hidden;text-overflow:ellipsis">${escHtml(row._source_file || "")}</td>`;
-      cells += `<td><button class="btn-x" data-ri="${ri}">✕</button></td>`;
-      tr.innerHTML = cells;
-      tr.querySelector(".btn-x").addEventListener("click", () => removeResult(ri));
-      body.appendChild(tr);
-    });
+    DISPLAY_COLS.forEach(c => { head.innerHTML += `<th>${escHtml(c.label)}</th>`; });
+    head.innerHTML += "<th style='width:36px'></th>";
+
+    // Only rebuild body if no cell is currently being edited
+    if (!editingCell) {
+      const fallbackIncoterm  = incotermConfirmed ? (incotermDetail || detectedIncoterm || "") : "";
+      const fallbackQuoteDate = quoteDateConfirmed ? quoteDate : "";
+      const body = $("#tableBody");
+      body.innerHTML = "";
+
+      results.forEach((row, ri) => {
+        const tr = document.createElement("tr");
+        tr.className = ri % 2 === 0 ? "even" : "odd";
+
+        // Row number
+        const tdNum = document.createElement("td");
+        tdNum.style.cssText = "color:#555;font-size:11px";
+        tdNum.textContent = ri + 1;
+        tr.appendChild(tdNum);
+
+        DISPLAY_COLS.forEach(c => {
+          const td = document.createElement("td");
+          let val;
+
+          if      (c.key === "quote_date")    val = row.quote_date    || fallbackQuoteDate || "";
+          else if (c.key === "incoterm")      val = row.incoterm      || fallbackIncoterm  || "";
+          else if (c.key === "_price_per_kg") val = computePricePerKg(row);
+          else                                val = row[c.key] || "";
+
+          td.textContent = val || "—";
+
+          if (c.editable) {
+            td.classList.add("cell-edit");
+            td.addEventListener("click", () => startEditCell(td, ri, c.key, val));
+          } else if (c.computed) {
+            td.classList.add("cell-computed");
+          }
+
+          tr.appendChild(td);
+        });
+
+        // Delete button
+        const tdDel = document.createElement("td");
+        const xBtn  = document.createElement("button");
+        xBtn.className   = "btn-x";
+        xBtn.textContent = "✕";
+        xBtn.addEventListener("click", () => removeResult(ri));
+        tdDel.appendChild(xBtn);
+        tr.appendChild(tdDel);
+
+        body.appendChild(tr);
+      });
+    }
   }
 
-  // Badge row
+  // ── Badge row (session overrides) ──
   const showBadge = (quoteDateConfirmed && quoteDate) || (incotermConfirmed && detectedIncoterm);
   $("#badgeRow").classList.toggle("hidden", !showBadge);
   if (showBadge) {
@@ -767,12 +1012,14 @@ function render() {
       if (quoteDateOriginal && quoteDateOriginal !== quoteDate && quoteDateOriginal !== "Manual entry") {
         origLine = `<div class="badge-orig">Original: ${escHtml(quoteDateOriginal)}</div>`;
       } else if (quoteDateOriginal === "Manual entry") {
-        origLine = `<div class="badge-orig">Manually entered</div>`;
+        origLine = `<div class="badge-orig">Manually entered — applied as fallback</div>`;
+      } else {
+        origLine = `<div class="badge-orig">Applied as fallback to rows without a date</div>`;
       }
       html += `<div class="badge-card">
         <div style="display:flex;align-items:center;gap:10px">
           <span style="font-size:20px">📅</span>
-          <div><div class="badge-label">Quote Date</div><div class="badge-value">${escHtml(quoteDate)}</div>${origLine}</div>
+          <div><div class="badge-label">Date Fallback</div><div class="badge-value">${escHtml(quoteDate)}</div>${origLine}</div>
         </div>
         <button class="btn-change" onclick="editDate()">Edit</button>
       </div>`;
@@ -781,7 +1028,10 @@ function render() {
       html += `<div class="badge-card">
         <div style="display:flex;align-items:center;gap:10px">
           <span class="incoterm-badge">${escHtml(detectedIncoterm)}</span>
-          <span style="color:#D1D5DB;font-size:13px">${escHtml(incotermDetail)}</span>
+          <div>
+            <div style="color:#D1D5DB;font-size:13px">${escHtml(incotermDetail)}</div>
+            <div class="badge-orig">Applied as fallback to rows without INCOTERM</div>
+          </div>
         </div>
         <button class="btn-change" onclick="editIncoterm()">Change</button>
       </div>`;
@@ -789,7 +1039,7 @@ function render() {
     $("#badgeRow").innerHTML = html;
   }
 
-  // Empty
+  // ── Empty state ──
   $("#emptyState").classList.toggle("hidden", hasResults || hasQueue || processing);
 }
 
@@ -797,7 +1047,7 @@ function render() {
 function editDate() {
   quoteDateConfirmed = false;
   $("#manualDateInput").value = quoteDate || "";
-  $("#dateConfirm").disabled = !quoteDate;
+  $("#dateConfirm").disabled  = !quoteDate;
   showModal("dateModal");
 }
 function editIncoterm() {
